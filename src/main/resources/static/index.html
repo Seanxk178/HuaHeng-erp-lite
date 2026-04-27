@@ -3,557 +3,1456 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP-Lite 进销存系统</title>
-    <!-- 引入 Bootstrap5 (负责漂亮的按钮、表格和布局) -->
+    <title>ERP-Lite · 企业管理系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0-alpha3/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* 简单美化一下侧边栏和主区域 */
-        body { background-color: #f8f9fa; }
-        .sidebar { min-height: 100vh; background-color: #343a40; color: white; padding-top: 20px;}
-        .sidebar .nav-link { color: #c2c7d0; cursor: pointer; margin-bottom: 5px; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background-color: #495057; border-radius: 5px; }
-        .main-content { padding: 20px; }
-        /* 隐藏没渲染完的 Vue 模板，防止页面闪烁 */
+        /* ============================================================
+           DESIGN TOKENS — 企业级精英深色主题
+        ============================================================ */
+        :root {
+            --bg-base:        #0d0f14;
+            --bg-surface:     #13161e;
+            --bg-elevated:    #1a1e28;
+            --bg-hover:       #1f2433;
+            --bg-input:       #161922;
+
+            --border-subtle:  rgba(255,255,255,0.06);
+            --border-default: rgba(255,255,255,0.10);
+            --border-strong:  rgba(255,255,255,0.18);
+
+            --text-primary:   #e8ecf4;
+            --text-secondary: #8b94a8;
+            --text-muted:     #545c6e;
+            --text-inverse:   #0d0f14;
+
+            --accent:         #4f7fff;
+            --accent-dim:     rgba(79,127,255,0.12);
+            --accent-glow:    rgba(79,127,255,0.35);
+
+            --success:        #22c55e;
+            --success-dim:    rgba(34,197,94,0.12);
+            --danger:         #f43f5e;
+            --danger-dim:     rgba(244,63,94,0.12);
+            --warning:        #f59e0b;
+            --warning-dim:    rgba(245,158,11,0.12);
+            --info:           #06b6d4;
+            --info-dim:       rgba(6,182,212,0.12);
+
+            --sidebar-w:      220px;
+            --topbar-h:       64px;
+            --radius-sm:      6px;
+            --radius-md:      10px;
+            --radius-lg:      14px;
+            --radius-xl:      20px;
+
+            --font-body:      'DM Sans', -apple-system, sans-serif;
+            --font-mono:      'DM Mono', 'Fira Code', monospace;
+
+            --shadow-sm:      0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md:      0 4px 16px rgba(0,0,0,0.5);
+            --shadow-lg:      0 12px 40px rgba(0,0,0,0.6);
+            --shadow-glow:    0 0 24px var(--accent-glow);
+
+            --transition:     all 0.18s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         [v-cloak] { display: none; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-base);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 99px; }
+
+        /* ============================================================
+           LOGIN PAGE
+        ============================================================ */
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-base);
+        }
+
+        .login-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                    radial-gradient(ellipse 800px 600px at 20% 50%, rgba(79,127,255,0.06) 0%, transparent 70%),
+                    radial-gradient(ellipse 600px 400px at 80% 20%, rgba(99,102,241,0.05) 0%, transparent 60%),
+                    radial-gradient(ellipse 400px 300px at 70% 80%, rgba(6,182,212,0.04) 0%, transparent 60%);
+        }
+
+        .login-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+        }
+
+        .login-panel {
+            position: relative;
+            z-index: 1;
+            width: 400px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-xl);
+            padding: 48px 40px;
+            box-shadow: var(--shadow-lg), 0 0 80px rgba(0,0,0,0.5);
+        }
+
+        .login-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .login-logo-mark {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .login-logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .login-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        .form-label-custom {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-control-custom {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            padding: 11px 14px;
+            font-size: 14px;
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-control-custom::placeholder { color: var(--text-muted); }
+
+        .form-control-custom:focus {
+            border-color: var(--accent);
+            background: var(--bg-elevated);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: var(--font-body);
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 8px;
+            letter-spacing: 0.2px;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .btn-login:hover {
+            background: #3d6ef0;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        /* ============================================================
+           LAYOUT
+        ============================================================ */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           SIDEBAR
+        ============================================================ */
+        .sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-mark {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .brand-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .brand-version {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            background: var(--bg-elevated);
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: auto;
+        }
+
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 10px; }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 12px 8px 6px;
+        }
+
+        .nav-item-custom {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 1px;
+            text-decoration: none;
+        }
+
+        .nav-item-custom:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .nav-item-custom.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .nav-item-custom.active .nav-icon { opacity: 1; }
+
+        .sidebar-footer {
+            padding: 14px 18px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 13px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 11px; color: var(--text-muted); }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .btn-logout:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: var(--danger-dim);
+        }
+
+        /* ============================================================
+           MAIN CONTENT
+        ============================================================ */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-base);
+        }
+
+        .topbar {
+            height: var(--topbar-h);
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 16px;
+            background: var(--bg-surface);
+        }
+
+        .topbar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+            letter-spacing: -0.2px;
+        }
+
+        .topbar-breadcrumb {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .page-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 32px;
+        }
+
+        /* ============================================================
+           COMPONENTS — Cards
+        ============================================================ */
+        .card-custom {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .card-header-custom {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body-custom { padding: 24px; }
+
+        /* ============================================================
+           COMPONENTS — KPI Stats
+        ============================================================ */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 20px 22px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .kpi-card:hover { border-color: var(--border-default); }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+        }
+
+        .kpi-card.kpi-danger::before  { background: var(--danger); }
+        .kpi-card.kpi-warning::before { background: var(--warning); }
+        .kpi-card.kpi-accent::before  { background: var(--accent); }
+        .kpi-card.kpi-success::before { background: var(--success); }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 12px;
+        }
+
+        .kpi-value {
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            letter-spacing: -0.5px;
+        }
+
+        .kpi-card.kpi-danger  .kpi-value { color: var(--danger); }
+        .kpi-card.kpi-warning .kpi-value { color: var(--warning); }
+        .kpi-card.kpi-accent  .kpi-value { color: var(--accent); }
+        .kpi-card.kpi-success .kpi-value { color: var(--success); }
+
+        /* ============================================================
+           COMPONENTS — Tables
+        ============================================================ */
+        .table-wrap { overflow-x: auto; }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead th {
+            padding: 11px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            border-bottom: 1px solid var(--border-subtle);
+            white-space: nowrap;
+            text-align: left;
+            background: var(--bg-surface);
+        }
+
+        .data-table tbody td {
+            padding: 13px 16px;
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr:last-child td { border-bottom: none; }
+
+        .data-table tbody tr:hover td {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .data-table.text-center thead th,
+        .data-table.text-center tbody td { text-align: center; }
+
+        .td-strong { font-weight: 600; color: var(--text-primary) !important; }
+        .td-mono { font-family: var(--font-mono); font-size: 12.5px; }
+
+        .empty-row td {
+            text-align: center;
+            padding: 48px 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* ============================================================
+           COMPONENTS — Badges
+        ============================================================ */
+        .badge-custom {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            font-weight: 500;
+            font-family: var(--font-mono);
+        }
+
+        .badge-neutral { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border-default); }
+        .badge-accent   { background: var(--accent-dim); color: var(--accent); }
+        .badge-success  { background: var(--success-dim); color: var(--success); }
+        .badge-danger   { background: var(--danger-dim); color: var(--danger); }
+        .badge-warning  { background: var(--warning-dim); color: var(--warning); }
+        .badge-info     { background: var(--info-dim); color: var(--info); }
+
+        /* ============================================================
+           COMPONENTS — Buttons
+        ============================================================ */
+        .btn-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: var(--font-body);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn-custom:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .btn-primary-custom {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+        .btn-primary-custom:hover { background: #3d6ef0; transform: translateY(-1px); box-shadow: 0 4px 16px var(--accent-glow); }
+
+        .btn-success-custom { background: var(--success-dim); color: var(--success); border-color: rgba(34,197,94,0.2); }
+        .btn-success-custom:hover { background: rgba(34,197,94,0.2); }
+
+        .btn-danger-custom { background: var(--danger-dim); color: var(--danger); border-color: rgba(244,63,94,0.2); }
+        .btn-danger-custom:hover { background: rgba(244,63,94,0.2); }
+
+        .btn-ghost {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border-color: var(--border-default);
+        }
+        .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-strong); }
+
+        .btn-sm-custom { padding: 5px 10px; font-size: 12px; }
+
+        /* ============================================================
+           COMPONENTS — Forms
+        ============================================================ */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .form-col { flex: 1; min-width: 140px; }
+        .form-col-auto { flex: 0 0 auto; }
+
+        .field-label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 7px;
+            letter-spacing: 0.2px;
+        }
+
+        .field-input, .field-select {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            font-size: 13.5px;
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            transition: var(--transition);
+            outline: none;
+            appearance: none;
+        }
+
+        .field-input::placeholder { color: var(--text-muted); }
+        .field-select option { background: var(--bg-elevated); }
+
+        .field-input:focus, .field-select:focus {
+            border-color: var(--accent);
+            background: var(--bg-elevated);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .field-select-wrap { position: relative; }
+        .field-select-wrap::after {
+            content: '▾';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            font-size: 11px;
+        }
+
+        .form-divider {
+            border: none;
+            border-top: 1px solid var(--border-subtle);
+            margin: 20px 0;
+        }
+
+        /* ============================================================
+           COMPONENTS — Alert / Info strip
+        ============================================================ */
+        .info-strip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(79,127,255,0.2);
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            color: var(--accent);
+            margin-top: 16px;
+        }
+
+        .info-strip.warning {
+            background: var(--warning-dim);
+            border-color: rgba(245,158,11,0.2);
+            color: var(--warning);
+        }
+
+        /* ============================================================
+           COMPONENTS — Tabs (filter)
+        ============================================================ */
+        .tab-bar {
+            display: inline-flex;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            gap: 2px;
+        }
+
+        .tab-item {
+            padding: 5px 14px;
+            border-radius: 4px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tab-item:hover { color: var(--text-secondary); background: var(--bg-hover); }
+        .tab-item.active { background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+
+        /* ============================================================
+           SVG ICONS — inline
+        ============================================================ */
+        .icon { display: inline-block; vertical-align: middle; }
+
+        /* ============================================================
+           CHARTS
+        ============================================================ */
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .chart-container { height: 300px; width: 100%; }
+
+        /* ============================================================
+           MISC
+        ============================================================ */
+        .section-gap { margin-bottom: 20px; }
+        .text-danger-custom { color: var(--danger) !important; }
+        .text-success-custom { color: var(--success) !important; }
+        .text-warning-custom { color: var(--warning) !important; }
+        .text-accent-custom { color: var(--accent) !important; }
+        .text-muted-custom { color: var(--text-muted) !important; }
+
+        .fs-xl { font-size: 20px; font-weight: 600; font-family: var(--font-mono); }
+
+        /* Toast notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.25s ease;
+            min-width: 260px;
+        }
+
+        .toast-item.toast-success { border-left: 3px solid var(--success); }
+        .toast-item.toast-danger  { border-left: 3px solid var(--danger); }
+        .toast-item.toast-warning { border-left: 3px solid var(--warning); }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Confirm dialog overlay */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 8888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .dialog {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dialog-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: var(--warning-dim);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+        .dialog-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .dialog-body { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+        .dialog-footer { display: flex; gap: 10px; justify-content: flex-end; }
+
+        /* Quantity display */
+        .qty-display {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+        }
+
+        .qty-zero { color: var(--danger) !important; }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-<!-- Vue 挂载点 -->
 <div id="app" v-cloak>
 
-    <!-- ================== 登录页面 ================== -->
-    <div v-if="!isLogin" class="container d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f0f2f5;">
-        <div class="card shadow" style="width: 400px; border-radius: 10px;">
-            <div class="card-body p-5">
-                <h3 class="text-center mb-4 text-primary">ERP-Lite 登录</h3>
-                <form @submit.prevent="submitLogin">
-                    <div class="mb-3">
-                        <label class="form-label">用户名</label>
-                        <input type="text" class="form-control" v-model="loginForm.username" placeholder="请输入 admin" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">密码</label>
-                        <input type="password" class="form-control" v-model="loginForm.password" placeholder="请输入 123456" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 py-2 fs-5">登 录</button>
-                </form>
+    <!-- ===================== 全局 Toast ===================== -->
+    <div class="toast-container">
+        <div v-for="t in toasts" :key="t.id" class="toast-item" :class="'toast-' + t.type">
+            <span>{{ t.type === 'success' ? '✓' : t.type === 'danger' ? '✕' : '!' }}</span>
+            {{ t.msg }}
+        </div>
+    </div>
+
+    <!-- ===================== 全局 Confirm Dialog ===================== -->
+    <!-- 点击蒙层时：仅在非 loading 状态允许关闭 -->
+    <div class="overlay" v-if="confirmDialog.show" @click.self="!confirmDialog.loading && (confirmDialog.show = false)">
+        <div class="dialog">
+            <div class="dialog-icon">⚠️</div>
+            <div class="dialog-title">{{ confirmDialog.title }}</div>
+            <div class="dialog-body">{{ confirmDialog.body }}</div>
+            <div class="dialog-footer">
+                <!-- loading 期间禁用取消，防止状态混乱 -->
+                <button class="btn-custom btn-ghost" @click="confirmDialog.show = false" :disabled="confirmDialog.loading">取消</button>
+                <!-- 绑定到 executeConfirm：异步等待完成后自动关闭 -->
+                <button class="btn-custom btn-danger-custom" @click="executeConfirm" :disabled="confirmDialog.loading"
+                        :style="confirmDialog.loading ? 'opacity:.6;cursor:not-allowed' : ''">
+                    <span v-if="confirmDialog.loading" style="display:inline-flex;align-items:center;gap:6px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                             style="animation:spin .8s linear infinite">
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                        </svg>
+                        执行中…
+                    </span>
+                    <span v-else>确认执行</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- ================== 主系统页面 (原有的界面) ================== -->
-    <div v-else class="container-fluid">
-        <div class="row">
-            <!-- 左侧菜单栏 -->
-            <div class="col-md-2 sidebar" style="min-height: 100vh; background-color: #343a40; color: white; padding-top: 20px;">
-                <h4 class="text-center mb-4">ERP Lite</h4>
-                <ul class="nav flex-column px-2">
-                    <!-- 管理员(ADMIN) 和 采购(PURCHASE) 能看基础数据和入库 -->
-                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_PURCHASE'">
-                        <a class="nav-link" :class="{active: currentMenu === 'partner'}" @click="currentMenu = 'partner'">🤝 往来单位</a>
-                    </li>
-                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_PURCHASE'">
-                        <a class="nav-link" :class="{active: currentMenu === 'goods'}" @click="currentMenu = 'goods'">📦 商品管理</a>
-                    </li>
-                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_PURCHASE'">
-                        <a class="nav-link" :class="{active: currentMenu === 'inbound'}" @click="currentMenu = 'inbound'">📥 采购入库</a>
-                    </li>
+    <!-- ===================== 登录页 ===================== -->
+    <div v-if="!isLogin" class="login-wrapper">
+        <div class="login-bg"></div>
+        <div class="login-grid"></div>
+        <div class="login-panel">
+            <div class="login-logo">
+                <div class="login-logo-mark">E</div>
+                <span class="login-logo-text">ERP Lite</span>
+            </div>
+            <p class="login-subtitle">企业级进销存数字化管理平台</p>
+            <form @submit.prevent="submitLogin">
+                <div class="form-group">
+                    <label class="form-label-custom">账号</label>
+                    <input type="text" class="form-control-custom" v-model="loginForm.username" placeholder="请输入系统账号" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 28px;">
+                    <label class="form-label-custom">密码</label>
+                    <input type="password" class="form-control-custom" v-model="loginForm.password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-login">进入系统 →</button>
+            </form>
+        </div>
+    </div>
 
-                    <!-- 管理员 和 财务(FINANCE) 能看审批、出库、台账、财务看板 -->
-                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
-                        <a class="nav-link text-danger" :class="{active: currentMenu === 'approve'}" @click="currentMenu = 'approve'">📝 单据审批</a>
-                    </li>
-                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN'">
-                        <a class="nav-link" :class="{active: currentMenu === 'outbound'}" @click="currentMenu = 'outbound'">📤 销售出库</a>
-                    </li>
-                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
-                        <a class="nav-link" :class="{active: currentMenu === 'stock'}" @click="currentMenu = 'stock'">📊 库存台账</a>
-                    </li>
-                    <li class="nav-item mt-3" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
-                        <a class="nav-link text-warning fw-bold" :class="{active: currentMenu === 'finance'}" @click="currentMenu = 'finance'">💰 财务看板</a>
-                    </li>
-                    <li class="nav-item mt-1" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
-                        <a class="nav-link text-info fw-bold" :class="{active: currentMenu === 'report'}" @click="currentMenu = 'report'">📈 报表中心</a>
-                    </li>
-                </ul>
+    <!-- ===================== 主界面 ===================== -->
+    <div v-else class="app-layout">
+
+        <!-- 左侧导航 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-mark">E</div>
+                <span class="brand-text">ERP Lite</span>
+                <span class="brand-version">v2.0</span>
             </div>
 
-            <!-- 右侧主内容区 -->
-            <div class="col-md-10 main-content" style="padding: 20px;">
-                <!-- 顶部导航条 -->
-                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-                    <h3>{{ menuTitle }}</h3>
-                    <div>
-                        <span class="text-muted me-3">欢迎您，{{ currentUser }} ({{ currentRole }})</span>
-                        <button class="btn btn-sm btn-outline-danger" @click="logout">退出登录</button>
+            <nav class="sidebar-nav">
+                <template v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_PURCHASE'">
+                    <div class="nav-section-label">核心业务</div>
+                    <a class="nav-item-custom" :class="{active: currentMenu === 'partner'}" @click="currentMenu = 'partner'">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        往来单位
+                    </a>
+                    <a class="nav-item-custom" :class="{active: currentMenu === 'goods'}" @click="currentMenu = 'goods'">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
+                        商品管理
+                    </a>
+                    <a class="nav-item-custom" :class="{active: currentMenu === 'inbound'}" @click="currentMenu = 'inbound'">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        采购入库
+                    </a>
+                </template>
+
+                <template v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
+                    <div class="nav-section-label" style="margin-top: 8px;">仓储财务</div>
+                    <a class="nav-item-custom" :class="{active: currentMenu === 'approve'}" @click="currentMenu = 'approve'" style="color: #f87171;" :style="currentMenu === 'approve' ? 'color: var(--danger)' : ''">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        单据审批
+                    </a>
+                </template>
+
+                <template v-if="currentRole === 'ROLE_ADMIN'">
+                    <a class="nav-item-custom" :class="{active: currentMenu === 'outbound'}" @click="currentMenu = 'outbound'">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        销售出库
+                    </a>
+                </template>
+
+                <template v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
+                    <a class="nav-item-custom" :class="{active: currentMenu === 'stock'}" @click="currentMenu = 'stock'">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        库存台账
+                    </a>
+
+                    <!-- ② V3.0 占位入口：盘点 & 退货 -->
+                    <div class="nav-section-label" style="margin-top: 8px;">V3.0 规划中</div>
+                    <div class="nav-item-custom" style="cursor:not-allowed;opacity:0.4;pointer-events:none;">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>
+                        库存盘点
+                        <span style="margin-left:auto;font-size:9px;background:rgba(79,127,255,0.18);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:600;letter-spacing:.5px;">SOON</span>
                     </div>
+                    <div class="nav-item-custom" style="cursor:not-allowed;opacity:0.4;pointer-events:none;">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.47"/></svg>
+                        采购退货
+                        <span style="margin-left:auto;font-size:9px;background:rgba(79,127,255,0.18);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:600;letter-spacing:.5px;">SOON</span>
+                    </div>
+
+                    <div class="nav-section-label" style="margin-top: 8px;">数据洞察</div>
+                    <a class="nav-item-custom" :class="{active: currentMenu === 'finance'}" @click="currentMenu = 'finance'">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        财务看板
+                    </a>
+                    <a class="nav-item-custom" :class="{active: currentMenu === 'report'}" @click="currentMenu = 'report'">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        报表中心
+                    </a>
+                </template>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar">{{ currentUser ? currentUser[0].toUpperCase() : 'U' }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ currentUser }}</div>
+                        <div class="user-role">{{ currentRole === 'ROLE_ADMIN' ? '系统管理员' : currentRole === 'ROLE_FINANCE' ? '财务专员' : '采购专员' }}</div>
+                    </div>
+                    <button class="btn-logout" @click="logout">退出</button>
                 </div>
-                <!-- ================== 0. 往来单位模块 ================== -->
-                <div v-show="currentMenu === 'partner'" class="card shadow-sm">
-                    <div class="card-body">
-                        <form @submit.prevent="submitAddPartner" class="row g-3 mb-4 align-items-end border-bottom pb-4">
-                            <div class="col-md-2">
-                                <label class="form-label">单位编码</label>
-                                <input type="text" class="form-control" v-model="newPartner.code" placeholder="如: SUP-01" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">单位名称</label>
-                                <input type="text" class="form-control" v-model="newPartner.name" placeholder="如: 华强北电子" required>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">类型</label>
-                                <select class="form-select" v-model="newPartner.type" required>
-                                    <option value="1">供应商</option>
-                                    <option value="2">客户</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">联系人</label>
-                                <input type="text" class="form-control" v-model="newPartner.contact" placeholder="选填">
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-primary w-100">➕ 添加单位</button>
-                            </div>
-                        </form>
+            </div>
+        </aside>
 
-                        <table class="table table-striped table-hover align-middle">
-                            <thead class="table-dark">
-                            <tr>
-                                <th>编码</th>
-                                <th>名称</th>
-                                <th>类型</th>
-                                <th>联系人</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="item in partnerList" :key="item.id">
-                                <td><span class="badge bg-secondary">{{ item.code }}</span></td>
-                                <td>{{ item.name }}</td>
-                                <td>
-                                        <span class="badge" :class="item.type === 1 ? 'bg-info' : 'bg-success'">
-                                            {{ item.type === 1 ? '供应商' : '客户' }}
-                                        </span>
-                                </td>
-                                <td>{{ item.contact || '-' }}</td>
-                            </tr>
-                            <tr v-if="partnerList.length === 0">
-                                <td colspan="4" class="text-center text-muted">暂无数据</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+        <!-- 右侧主区 -->
+        <main class="main-area">
+            <!-- 顶部栏 -->
+            <header class="topbar">
+                <div>
+                    <div class="topbar-title">{{ menuTitle }}</div>
+                    <div class="topbar-breadcrumb">ERP-Lite / {{ menuTitle }}</div>
                 </div>
-                <!-- ================== 1. 商品管理模块 ================== -->
-                <div v-show="currentMenu === 'goods'" class="card shadow-sm">
-                    <div class="card-body">
-                        <!-- 添加商品表单 -->
-                        <form @submit.prevent="submitAddGoods" class="row g-3 mb-4 align-items-end border-bottom pb-4">
-                            <div class="col-md-3">
-                                <label class="form-label">商品编码</label>
-                                <input type="text" class="form-control" v-model="newGoods.code" placeholder="如: SP-001" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">商品名称</label>
-                                <input type="text" class="form-control" v-model="newGoods.name" placeholder="如: 机械键盘" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">单位</label>
-                                <input type="text" class="form-control" v-model="newGoods.unit" placeholder="如: 个" required>
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-primary w-100">➕ 添加新商品</button>
-                            </div>
-                        </form>
+            </header>
 
-                        <!-- 商品列表表格 -->
-                        <table class="table table-striped table-hover align-middle">
-                            <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>商品编码</th>
-                                <th>商品名称</th>
-                                <th>单位</th>
-                                <th>创建时间</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="item in goodsList" :key="item.id">
-                                <td>{{ item.id }}</td>
-                                <td><span class="badge bg-secondary">{{ item.code }}</span></td>
-                                <td>{{ item.name }}</td>
-                                <td>{{ item.unit }}</td>
-                                <td>{{ formatDate(item.createTime) }}</td>
-                            </tr>
-                            <tr v-if="goodsList.length === 0">
-                                <td colspan="5" class="text-center text-muted">暂无商品数据</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <!-- 内容区 -->
+            <div class="page-body">
 
-                <!-- ================== 2. 采购入库模块 ================== -->
-                <div v-show="currentMenu === 'inbound'" class="card shadow-sm">
-                    <div class="card-body">
-                        <form @submit.prevent="submitInbound" class="row g-3 mb-3">
-                            <div class="col-md-3">
-                                <label class="form-label">供应商</label>
-                                <select class="form-select" v-model="inboundData.partnerId" required>
-                                    <option value="" disabled>--选择供应商--</option>
-                                    <option v-for="item in partnerList.filter(p => p.type === 1)" :key="item.id" :value="item.id">
-                                        {{ item.name }}
-                                    </option>
-                                </select>
+                <!-- ================== 往来单位 ================== -->
+                <div v-show="currentMenu === 'partner'">
+                    <div class="card-custom section-gap">
+                        <div class="card-header-custom">
+                            <div class="card-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/></svg>
+                                新增往来单位
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">入库商品</label>
-                                <select class="form-select" v-model="inboundData.goodsId" required>
-                                    <option value="" disabled>--选择商品--</option>
-                                    <option v-for="item in goodsList" :key="item.id" :value="item.id">
-                                        {{ item.code }} | {{ item.name }}
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">入库数量</label>
-                                <input type="number" class="form-control" v-model.number="inboundData.quantity" min="1" required>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">采购单价 (元)</label>
-                                <input type="number" step="0.01" class="form-control" v-model.number="inboundData.unitPrice" min="0.01" required>
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-success w-100">📥 确认入库</button>
-                            </div>
-                        </form>
-                        <div class="alert alert-info py-2" v-if="inboundData.quantity && inboundData.unitPrice">
-                            本次预计生成应付账款：<strong>{{ (inboundData.quantity * inboundData.unitPrice).toFixed(2) }}</strong> 元
                         </div>
-                    </div>
-                </div>
-
-                <!-- ================== 2.5 单据审批模块 ================== -->
-                <div v-show="currentMenu === 'approve'" class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <h5 class="card-title text-danger pt-1">待审批入库单</h5>
-                            <button class="btn btn-sm btn-outline-secondary" @click="loadPendingOrders">🔄 刷新列表</button>
-                        </div>
-                        <table class="table table-bordered align-middle text-center">
-                            <thead class="table-light">
-                            <tr>
-                                <th>单据编号</th>
-                                <th>供应商</th>
-                                <th>商品明细</th>
-                                <th>数量</th>
-                                <th>总金额</th>
-                                <th>提交时间</th>
-                                <th>操作</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="item in pendingOrders" :key="item.orderId">
-                                <td><code>{{ item.orderNo }}</code></td>
-                                <td>{{ item.partnerName }}</td>
-                                <td>{{ item.goodsName }}</td>
-                                <td class="text-primary fw-bold">{{ item.quantity }}</td>
-                                <td class="text-danger fw-bold">¥{{ item.totalAmount }}</td>
-                                <td>{{ formatDate(item.createTime) }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-success" @click="doApprove(item.orderId)">✅ 审核通过</button>
-                                </td>
-                            </tr>
-                            <tr v-if="pendingOrders.length === 0">
-                                <td colspan="7" class="text-muted py-4">✅ 暂无待处理的单据</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <!-- ================== 3. 销售出库模块 ================== -->
-                <div v-show="currentMenu === 'outbound'" class="card shadow-sm">
-                    <div class="card-body">
-                        <form @submit.prevent="submitOutbound" class="row g-3 mb-3">
-                            <div class="col-md-3">
-                                <label class="form-label">客户</label>
-                                <select class="form-select" v-model="outboundData.partnerId" required>
-                                    <option value="" disabled>--选择客户--</option>
-                                    <option v-for="item in partnerList.filter(p => p.type === 2)" :key="item.id" :value="item.id">
-                                        {{ item.name }}
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">出库商品</label>
-                                <select class="form-select" v-model="outboundData.goodsId" required>
-                                    <option value="" disabled>--选择商品--</option>
-                                    <option v-for="item in goodsList" :key="item.id" :value="item.id">
-                                        {{ item.code }} | {{ item.name }}
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">出库数量</label>
-                                <input type="number" class="form-control" v-model.number="outboundData.quantity" min="1" required>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">销售单价 (元)</label>
-                                <input type="number" step="0.01" class="form-control" v-model.number="outboundData.unitPrice" min="0.01" required>
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-warning w-100 text-white">📤 确认出库</button>
-                            </div>
-                        </form>
-                        <div class="alert alert-warning py-2" v-if="outboundData.quantity && outboundData.unitPrice">
-                            本次预计生成应收账款：<strong>{{ (outboundData.quantity * outboundData.unitPrice).toFixed(2) }}</strong> 元
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ================== 4. 实时库存台账模块 ================== -->
-                <div v-show="currentMenu === 'stock'" class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <h5 class="card-title mb-0 pt-1">全仓库实时库存表 (含财务成本)</h5>
-                            <button class="btn btn-sm btn-success me-2" @click="exportStockExcel">⬇️ 导出Excel</button>
-                            <button class="btn btn-sm btn-outline-primary" @click="loadStockLedger">🔄 刷新台账</button>
-                        </div>
-                        <table class="table table-bordered table-hover text-center align-middle">
-                            <thead class="table-light">
-                            <tr>
-                                <th>商品编码</th>
-                                <th>商品名称</th>
-                                <th>当前库存</th>
-                                <th>库存总成本 (元)</th>
-                                <th>加权平均单价 (元)</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="item in stockList" :key="item.goodsId">
-                                <td><code>{{ item.goodsCode }}</code></td>
-                                <td>{{ item.goodsName }}</td>
-                                <td>
-                                    <strong :class="{'text-danger': item.quantity === 0, 'fs-5': true}">
-                                        {{ item.quantity }} {{ item.unit }}
-                                    </strong>
-                                </td>
-                                <td><strong class="text-primary">¥ {{ item.totalCost }}</strong></td>
-                                <td><strong class="text-success">¥ {{ item.avgPrice }}</strong></td>
-                            </tr>
-                            <tr v-if="stockList.length === 0">
-                                <td colspan="5" class="text-muted py-4">暂无数据</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                 <!-- ================== 5. 财务看板模块 ================== -->
-                <div v-show="currentMenu === 'finance'">
-                    <div class="row g-4 mb-4">
-                        <!-- 应付账款卡片 -->
-                        <div class="col-md-3">
-                            <div class="card shadow-sm border-0 border-start border-danger border-4">
-                                <div class="card-body">
-                                    <h6 class="text-muted mb-2">欠供应商货款 (应付账款)</h6>
-                                    <h3 class="mb-0 text-danger">¥ {{ financeData.totalPayable }}</h3>
+                        <div class="card-body-custom">
+                            <form @submit.prevent="submitAddPartner">
+                                <div class="form-row">
+                                    <div class="form-col">
+                                        <label class="field-label">单位编码</label>
+                                        <input type="text" class="field-input" v-model="newPartner.code" placeholder="如: SUP-01" required>
+                                    </div>
+                                    <div class="form-col">
+                                        <label class="field-label">单位名称</label>
+                                        <input type="text" class="field-input" v-model="newPartner.name" placeholder="如: 华强北电子" required>
+                                    </div>
+                                    <div class="form-col" style="max-width:140px;">
+                                        <label class="field-label">类型</label>
+                                        <div class="field-select-wrap">
+                                            <select class="field-select" v-model="newPartner.type" required>
+                                                <option value="1">供应商</option>
+                                                <option value="2">客户</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-col">
+                                        <label class="field-label">联系人 <span style="color:var(--text-muted)">(选填)</span></label>
+                                        <input type="text" class="field-input" v-model="newPartner.contact" placeholder="联系人姓名">
+                                    </div>
+                                    <div class="form-col-auto">
+                                        <label class="field-label" style="visibility:hidden">提交</label>
+                                        <button type="submit" class="btn-custom btn-primary-custom">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                            添加单位
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <!-- 应收账款卡片 -->
-                        <div class="col-md-3">
-                            <div class="card shadow-sm border-0 border-start border-warning border-4">
-                                <div class="card-body">
-                                    <h6 class="text-muted mb-2">客户未结欠款 (应收账款)</h6>
-                                    <h3 class="mb-0 text-warning">¥ {{ financeData.totalReceivable }}</h3>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- 总销售额卡片 -->
-                        <div class="col-md-3">
-                            <div class="card shadow-sm border-0 border-start border-primary border-4">
-                                <div class="card-body">
-                                    <h6 class="text-muted mb-2">累计销售总额</h6>
-                                    <h3 class="mb-0 text-primary">¥ {{ financeData.totalSales }}</h3>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- 毛利润卡片 -->
-                        <div class="col-md-3">
-                            <div class="card shadow-sm border-0 border-start border-success border-4">
-                                <div class="card-body">
-                                    <h6 class="text-muted mb-2">预估毛利润</h6>
-                                    <h3 class="mb-0 text-success">¥ {{ financeData.totalProfit }}</h3>
-                                </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
 
-                    <!-- === 动态数据图表区 (ECharts) === -->
-                    <div class="row mb-4">
-                        <!-- 左侧饼图 -->
-                        <div class="col-md-6">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-body">
-                                    <div id="financePieChart" style="height: 300px; width: 100%;"></div>
-                                </div>
-                            </div>
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <div class="card-title">往来单位列表</div>
+                            <span class="badge-custom badge-neutral">共 {{ partnerList.length }} 条</span>
                         </div>
-                        <!-- 右侧柱状图 -->
-                        <div class="col-md-6">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-body">
-                                    <div id="stockBarChart" style="height: 300px; width: 100%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- === 财务对账明细与核销区 === -->
-                    <div class="card shadow-sm mt-4">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title mb-0">📝 财务对账单明细</h5>
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-secondary" :class="{active: accountFilterType === ''}" @click="changeAccountFilter('')">全部流水</button>
-                                    <button class="btn btn-sm btn-outline-danger" :class="{active: accountFilterType === 1}" @click="changeAccountFilter(1)">应付 (欠款)</button>
-                                    <button class="btn btn-sm btn-outline-warning" :class="{active: accountFilterType === 2}" @click="changeAccountFilter(2)">应收 (收款)</button>
-                                </div>
-                            </div>
-
-                            <table class="table table-hover align-middle text-center">
-                                <thead class="table-light">
-                                <tr>
-                                    <th>关联单号</th>
-                                    <th>往来单位 (客户/供应商)</th>
-                                    <th>账单类型</th>
-                                    <th>发生金额</th>
-                                    <th>账单产生时间</th>
-                                    <th>核销状态</th>
-                                    <th>操作</th>
-                                </tr>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                <tr><th>编码</th><th>名称</th><th>类型</th><th>联系人</th></tr>
                                 </thead>
                                 <tbody>
-                                <tr v-for="item in accountList" :key="item.accountId">
-                                    <td><code>{{ item.orderNo || '手工建账' }}</code></td>
-                                    <td>{{ item.partnerName }}</td>
+                                <tr v-for="item in partnerList" :key="item.id">
+                                    <td><span class="badge-custom badge-neutral td-mono">{{ item.code }}</span></td>
+                                    <td class="td-strong">{{ item.name }}</td>
                                     <td>
-                                            <span class="badge" :class="item.type === 1 ? 'bg-danger' : 'bg-warning text-dark'">
-                                                {{ item.type === 1 ? '采购应付' : '销售应收' }}
+                                            <span class="badge-custom" :class="item.type === 1 ? 'badge-accent' : 'badge-success'">
+                                                {{ item.type === 1 ? '供应商' : '客户' }}
                                             </span>
                                     </td>
-                                    <td class="fw-bold" :class="item.type === 1 ? 'text-danger' : 'text-success'">
-                                        {{ item.type === 1 ? '-' : '+' }} ¥{{ item.amount }}
-                                    </td>
-                                    <td>{{ formatDate(item.createTime) }}</td>
-                                    <td>
-                                        <span v-if="item.status === 1" class="badge bg-success">已结清</span>
-                                        <span v-else class="badge bg-secondary">未结清</span>
-                                    </td>
-                                    <td>
-                                        <button v-if="item.status === 0 && currentRole === 'ROLE_FINANCE'"
-                                                class="btn btn-sm"
-                                                :class="item.type === 1 ? 'btn-danger' : 'btn-success'"
-                                                @click="doSettleAccount(item)">
-                                            {{ item.type === 1 ? '💸 支付货款' : '💰 确认收款' }}
-                                        </button>
-                                        <span v-else-if="item.status === 1" class="text-muted small">操作完成</span>
-                                        <!-- 安全提示：如果不是财务角色，看不到核销按钮 -->
-                                        <span v-else class="text-muted small">无权限操作</span>
-                                    </td>
+                                    <td>{{ item.contact || '—' }}</td>
                                 </tr>
-                                <tr v-if="accountList.length === 0">
-                                    <td colspan="7" class="text-muted py-4">暂无财务流水记录</td>
-                                </tr>
+                                <tr class="empty-row" v-if="partnerList.length === 0"><td colspan="4">暂无数据，请添加往来单位</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- ================== 6. 报表中心模块 ================== -->
+                <!-- ================== 商品管理 ================== -->
+                <div v-show="currentMenu === 'goods'">
+                    <div class="card-custom section-gap">
+                        <div class="card-header-custom">
+                            <div class="card-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                                新增商品
+                            </div>
+                        </div>
+                        <div class="card-body-custom">
+                            <form @submit.prevent="submitAddGoods">
+                                <div class="form-row">
+                                    <div class="form-col">
+                                        <label class="field-label">商品编码</label>
+                                        <input type="text" class="field-input" v-model="newGoods.code" placeholder="如: SP-001" required>
+                                    </div>
+                                    <div class="form-col">
+                                        <label class="field-label">商品名称</label>
+                                        <input type="text" class="field-input" v-model="newGoods.name" placeholder="如: 机械键盘" required>
+                                    </div>
+                                    <div class="form-col" style="max-width:120px;">
+                                        <label class="field-label">单位</label>
+                                        <input type="text" class="field-input" v-model="newGoods.unit" placeholder="如: 个" required>
+                                    </div>
+                                    <div class="form-col-auto">
+                                        <label class="field-label" style="visibility:hidden">提交</label>
+                                        <button type="submit" class="btn-custom btn-primary-custom">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                            添加商品
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <div class="card-title">商品列表</div>
+                            <span class="badge-custom badge-neutral">共 {{ goodsList.length }} 种</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead><tr><th>ID</th><th>商品编码</th><th>商品名称</th><th>单位</th><th>创建时间</th></tr></thead>
+                                <tbody>
+                                <tr v-for="item in goodsList" :key="item.id">
+                                    <td class="td-mono" style="color:var(--text-muted)">{{ item.id }}</td>
+                                    <td><span class="badge-custom badge-neutral td-mono">{{ item.code }}</span></td>
+                                    <td class="td-strong">{{ item.name }}</td>
+                                    <td>{{ item.unit }}</td>
+                                    <td class="td-mono" style="color:var(--text-muted); font-size:12px;">{{ formatDate(item.createTime) }}</td>
+                                </tr>
+                                <tr class="empty-row" v-if="goodsList.length === 0"><td colspan="5">暂无商品数据</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 采购入库 ================== -->
+                <div v-show="currentMenu === 'inbound'">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <div class="card-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                提交采购入库单
+                            </div>
+                        </div>
+                        <div class="card-body-custom">
+                            <form @submit.prevent="submitInbound">
+                                <div class="form-row">
+                                    <div class="form-col">
+                                        <label class="field-label">供应商</label>
+                                        <div class="field-select-wrap">
+                                            <select class="field-select" v-model="inboundData.partnerId" required>
+                                                <option value="" disabled>— 选择供应商 —</option>
+                                                <option v-for="item in partnerList.filter(p => p.type === 1)" :key="item.id" :value="item.id">{{ item.name }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-col">
+                                        <label class="field-label">入库商品</label>
+                                        <div class="field-select-wrap">
+                                            <select class="field-select" v-model="inboundData.goodsId" required>
+                                                <option value="" disabled>— 选择商品 —</option>
+                                                <option v-for="item in goodsList" :key="item.id" :value="item.id">{{ item.code }} · {{ item.name }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-col" style="max-width:130px;">
+                                        <label class="field-label">入库数量</label>
+                                        <input type="number" class="field-input" v-model.number="inboundData.quantity" min="1" placeholder="0" required>
+                                    </div>
+                                    <div class="form-col" style="max-width:150px;">
+                                        <label class="field-label">采购单价 (元)</label>
+                                        <input type="number" step="0.01" class="field-input" v-model.number="inboundData.unitPrice" min="0.01" placeholder="0.00" required>
+                                    </div>
+                                    <div class="form-col-auto">
+                                        <label class="field-label" style="visibility:hidden">提交</label>
+                                        <button type="submit" class="btn-custom btn-success-custom">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            提交单据
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="info-strip" v-if="inboundData.quantity && inboundData.unitPrice">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    本次预计生成应付账款：<strong class="fs-xl" style="margin-left:4px;">¥ {{ (inboundData.quantity * inboundData.unitPrice).toFixed(2) }}</strong>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 单据审批 ================== -->
+                <div v-show="currentMenu === 'approve'">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <div class="card-title">
+                                <span class="badge-custom badge-danger" style="margin-right:4px;">待审批</span>
+                                入库单审批队列
+                            </div>
+                            <button class="btn-custom btn-ghost btn-sm-custom" @click="loadPendingOrders">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                刷新
+                            </button>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead><tr><th>单据编号</th><th>供应商</th><th>商品明细</th><th style="text-align:right">数量</th><th style="text-align:right">总金额</th><th>提交时间</th><th>操作</th></tr></thead>
+                                <tbody>
+                                <tr v-for="item in pendingOrders" :key="item.orderId">
+                                    <td><span class="badge-custom badge-neutral td-mono">{{ item.orderNo }}</span></td>
+                                    <td class="td-strong">{{ item.partnerName }}</td>
+                                    <td>{{ item.goodsName }}</td>
+                                    <td style="text-align:right"><span class="qty-display">{{ item.quantity }}</span></td>
+                                    <td style="text-align:right"><span class="td-strong text-danger-custom">¥ {{ item.totalAmount }}</span></td>
+                                    <td class="td-mono" style="color:var(--text-muted);font-size:12px;">{{ formatDate(item.createTime) }}</td>
+                                    <td>
+                                        <button class="btn-custom btn-success-custom btn-sm-custom" @click="doApprove(item.orderId)">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            审核通过
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="empty-row" v-if="pendingOrders.length === 0"><td colspan="7">🎉 当前队列清空，无待审批单据</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 销售出库 ================== -->
+                <div v-show="currentMenu === 'outbound'">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <div class="card-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                提交销售出库单
+                            </div>
+                        </div>
+                        <div class="card-body-custom">
+                            <form @submit.prevent="submitOutbound">
+                                <div class="form-row">
+                                    <div class="form-col">
+                                        <label class="field-label">客户</label>
+                                        <div class="field-select-wrap">
+                                            <select class="field-select" v-model="outboundData.partnerId" required>
+                                                <option value="" disabled>— 选择客户 —</option>
+                                                <option v-for="item in partnerList.filter(p => p.type === 2)" :key="item.id" :value="item.id">{{ item.name }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-col">
+                                        <label class="field-label">出库商品</label>
+                                        <div class="field-select-wrap">
+                                            <select class="field-select" v-model="outboundData.goodsId" required>
+                                                <option value="" disabled>— 选择商品 —</option>
+                                                <option v-for="item in goodsList" :key="item.id" :value="item.id">{{ item.code }} · {{ item.name }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-col" style="max-width:130px;">
+                                        <label class="field-label">出库数量</label>
+                                        <input type="number" class="field-input" v-model.number="outboundData.quantity" min="1" placeholder="0" required>
+                                    </div>
+                                    <div class="form-col" style="max-width:150px;">
+                                        <label class="field-label">销售单价 (元)</label>
+                                        <input type="number" step="0.01" class="field-input" v-model.number="outboundData.unitPrice" min="0.01" placeholder="0.00" required>
+                                    </div>
+                                    <div class="form-col-auto">
+                                        <label class="field-label" style="visibility:hidden">提交</label>
+                                        <button type="submit" class="btn-custom btn-primary-custom">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                            确认出库
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="info-strip warning" v-if="outboundData.quantity && outboundData.unitPrice">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    本次预计生成应收账款：<strong class="fs-xl" style="margin-left:4px;">¥ {{ (outboundData.quantity * outboundData.unitPrice).toFixed(2) }}</strong>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 库存台账 ================== -->
+                <div v-show="currentMenu === 'stock'">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <div class="card-title">
+                                实时库存台账
+                                <span class="badge-custom badge-accent">核心财务</span>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn-custom btn-success-custom btn-sm-custom" @click="exportStockExcel">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    导出 Excel
+                                </button>
+                                <button class="btn-custom btn-ghost btn-sm-custom" @click="loadStockLedger">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                    刷新
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table text-center">
+                                <thead><tr><th>商品编码</th><th>商品名称</th><th>当前库存</th><th>库存总成本</th><th>加权均价</th></tr></thead>
+                                <tbody>
+                                <tr v-for="item in stockList" :key="item.goodsId">
+                                    <td><span class="badge-custom badge-neutral td-mono">{{ item.goodsCode }}</span></td>
+                                    <td class="td-strong">{{ item.goodsName }}</td>
+                                    <td>
+                                        <span class="qty-display" :class="{'qty-zero': item.quantity === 0}">{{ item.quantity }}</span>
+                                        <span style="color:var(--text-muted);font-size:12px;margin-left:4px;">{{ item.unit }}</span>
+                                    </td>
+                                    <td class="td-strong text-accent-custom td-mono">¥ {{ item.totalCost }}</td>
+                                    <td class="td-strong text-success-custom td-mono">¥ {{ item.avgPrice }}</td>
+                                </tr>
+                                <tr class="empty-row" v-if="stockList.length === 0"><td colspan="5">暂无库存数据</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 财务看板 ================== -->
+                <div v-show="currentMenu === 'finance'">
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid section-gap">
+                        <div class="kpi-card kpi-danger">
+                            <div class="kpi-label">应付账款（欠供应商）</div>
+                            <div class="kpi-value">¥ {{ financeData.totalPayable }}</div>
+                        </div>
+                        <div class="kpi-card kpi-warning">
+                            <div class="kpi-label">应收账款（客户欠款）</div>
+                            <div class="kpi-value">¥ {{ financeData.totalReceivable }}</div>
+                        </div>
+                        <div class="kpi-card kpi-accent">
+                            <div class="kpi-label">累计销售总额</div>
+                            <div class="kpi-value">¥ {{ financeData.totalSales }}</div>
+                        </div>
+                        <div class="kpi-card kpi-success">
+                            <div class="kpi-label">预估毛利润</div>
+                            <div class="kpi-value">¥ {{ financeData.totalProfit }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="chart-row section-gap">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <div class="card-title">资金分布概览</div>
+                            </div>
+                            <div class="card-body-custom">
+                                <div id="financePieChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <div class="card-title">库存资金占用 Top 5</div>
+                            </div>
+                            <div class="card-body-custom">
+                                <div id="stockBarChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Table -->
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <div class="card-title">财务流水 · 对账核销</div>
+                            <div class="tab-bar">
+                                <div class="tab-item" :class="{active: accountFilterType === ''}" @click="changeAccountFilter('')">全部</div>
+                                <div class="tab-item" :class="{active: accountFilterType === 1}" @click="changeAccountFilter(1)" style="color:var(--danger)">应付</div>
+                                <div class="tab-item" :class="{active: accountFilterType === 2}" @click="changeAccountFilter(2)" style="color:var(--warning)">应收</div>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead><tr><th>关联单号</th><th>往来单位</th><th>账单类型</th><th style="text-align:right">发生金额</th><th>产生时间</th><th>状态</th><th>操作</th></tr></thead>
+                                <tbody>
+                                <tr v-for="item in accountList" :key="item.accountId">
+                                    <td><span class="badge-custom badge-neutral td-mono">{{ item.orderNo || '手工建账' }}</span></td>
+                                    <td class="td-strong">{{ item.partnerName }}</td>
+                                    <td>
+                                            <span class="badge-custom" :class="item.type === 1 ? 'badge-danger' : 'badge-warning'">
+                                                {{ item.type === 1 ? '采购应付' : '销售应收' }}
+                                            </span>
+                                    </td>
+                                    <td style="text-align:right">
+                                            <span class="td-strong td-mono" :class="item.type === 1 ? 'text-danger-custom' : 'text-success-custom'">
+                                                {{ item.type === 1 ? '− ' : '+ ' }}¥ {{ item.amount }}
+                                            </span>
+                                    </td>
+                                    <td class="td-mono" style="color:var(--text-muted);font-size:12px;">{{ formatDate(item.createTime) }}</td>
+                                    <td>
+                                        <span v-if="item.status === 1" class="badge-custom badge-success">已结清</span>
+                                        <span v-else class="badge-custom badge-neutral">未结清</span>
+                                    </td>
+                                    <td>
+                                        <button v-if="item.status === 0 && currentRole === 'ROLE_FINANCE'" class="btn-custom btn-sm-custom" :class="item.type === 1 ? 'btn-danger-custom' : 'btn-success-custom'" @click="doSettleAccount(item)">
+                                            {{ item.type === 1 ? '支付货款' : '确认收款' }}
+                                        </button>
+                                        <span v-else-if="item.status === 1" style="color:var(--text-muted);font-size:12px;">已归档</span>
+                                        <span v-else style="color:var(--text-muted);font-size:12px;">无权限</span>
+                                    </td>
+                                </tr>
+                                <tr class="empty-row" v-if="accountList.length === 0"><td colspan="7">暂无流水记录</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 报表中心 ================== -->
                 <div v-show="currentMenu === 'report'">
-                    <div class="row g-4">
-                        <!-- 左侧：库龄分析 -->
-                        <div class="col-md-6">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0 text-primary">📦 库龄分析 (滞销预警)</h6>
-                                    <button class="btn btn-sm btn-outline-secondary" @click="loadReports">刷新</button>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <div class="card-title">
+                                    <span class="badge-custom badge-info" style="margin-right:4px;">库龄</span>
+                                    库龄分析 · 滞销预警
                                 </div>
-                                <div class="card-body p-0">
-                                    <table class="table table-hover align-middle text-center mb-0">
-                                        <thead class="table-light">
-                                        <tr>
-                                            <th>商品信息</th>
-                                            <th>库存状态</th>
-                                            <th>滞留天数</th>
-                                            <th>健康度评级</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="item in stockAgeList" :key="item.code">
-                                            <td><code>{{ item.code }}</code></td>
-                                            <td>{{ item.description }}</td>
-                                            <td class="fw-bold">{{ item.days }} 天</td>
-                                            <td>
-                                                <span class="badge" :class="getBadgeClass(item.days)">{{ item.level }}</span>
-                                            </td>
-                                        </tr>
-                                        <tr v-if="stockAgeList.length === 0"><td colspan="4" class="py-4 text-muted">暂无库存数据</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <button class="btn-custom btn-ghost btn-sm-custom" @click="loadReports">刷新</button>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="data-table text-center">
+                                    <thead><tr><th>商品编码</th><th>库存状态</th><th>滞留天数</th><th>健康评级</th></tr></thead>
+                                    <tbody>
+                                    <tr v-for="item in stockAgeList" :key="item.code">
+                                        <td><span class="badge-custom badge-neutral td-mono">{{ item.code }}</span></td>
+                                        <td>{{ item.description }}</td>
+                                        <td class="td-mono td-strong">{{ item.days }} 天</td>
+                                        <td><span class="badge-custom" :class="getBadgeClassCustom(item.days)">{{ item.level }}</span></td>
+                                    </tr>
+                                    <tr class="empty-row" v-if="stockAgeList.length === 0"><td colspan="4">暂无库龄数据</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <!-- 右侧：账龄分析 -->
-                        <div class="col-md-6">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0 text-warning">💰 应收账龄分析 (坏账预警)</h6>
-                                    <button class="btn btn-sm btn-outline-secondary" @click="loadReports">刷新</button>
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <div class="card-title">
+                                    <span class="badge-custom badge-warning" style="margin-right:4px;">账龄</span>
+                                    应收账龄分析 · 坏账预警
                                 </div>
-                                <div class="card-body p-0">
-                                    <table class="table table-hover align-middle text-center mb-0">
-                                        <thead class="table-light">
-                                        <tr>
-                                            <th>客户信息</th>
-                                            <th>欠款详情</th>
-                                            <th>逾期天数</th>
-                                            <th>风险评级</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="item in debtAgeList" :key="item.code">
-                                            <td><code>{{ item.code }}</code></td>
-                                            <td class="text-danger fw-bold">{{ item.description }}</td>
-                                            <td class="fw-bold">{{ item.days }} 天</td>
-                                            <td>
-                                                <span class="badge" :class="getBadgeClass(item.days)">{{ item.level }}</span>
-                                            </td>
-                                        </tr>
-                                        <tr v-if="debtAgeList.length === 0"><td colspan="4" class="py-4 text-muted">暂无欠款数据</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <button class="btn-custom btn-ghost btn-sm-custom" @click="loadReports">刷新</button>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="data-table text-center">
+                                    <thead><tr><th>客户编码</th><th>欠款详情</th><th>逾期天数</th><th>风险评级</th></tr></thead>
+                                    <tbody>
+                                    <tr v-for="item in debtAgeList" :key="item.code">
+                                        <td><span class="badge-custom badge-neutral td-mono">{{ item.code }}</span></td>
+                                        <td class="text-danger-custom">{{ item.description }}</td>
+                                        <td class="td-mono td-strong">{{ item.days }} 天</td>
+                                        <td><span class="badge-custom" :class="getBadgeClassCustom(item.days)">{{ item.level }}</span></td>
+                                    </tr>
+                                    <tr class="empty-row" v-if="debtAgeList.length === 0"><td colspan="4">暂无账龄数据</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ================== 6. 报表中心模块 ================== -->
-
-                </div>
-            </div>
-        </div>
+            </div><!-- /page-body -->
+        </main>
     </div>
 
 </div>
 
-<!-- 引入 Vue3 和 Axios -->
 <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.47/vue.global.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.min.js"></script>
-<!-- 引入 ECharts 数据可视化库 -->
 <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
 
 <script>
@@ -573,20 +1472,49 @@
                 localStorage.removeItem('erp_token');
                 localStorage.removeItem('erp_role');
                 localStorage.removeItem('erp_username');
-                alert("登录已过期或未登录，请重新登录！");
                 window.location.reload();
                 return Promise.reject("未登录");
             }
             return res.data;
         },
         err => {
-            alert("网络请求失败：" + err.message);
             return Promise.reject(err);
         }
     );
 
     const app = createApp({
         setup() {
+            // ===== Toast 系统（替代 alert） =====
+            const toasts = ref([]);
+            let toastId = 0;
+            const showToast = (msg, type = 'success') => {
+                const id = ++toastId;
+                toasts.value.push({ id, msg, type });
+                setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id); }, 3500);
+            };
+
+            // ===== Confirm Dialog（替代 confirm） =====
+            // ③ confirmDialog 新增 loading 字段，防止请求期间重复点击
+            const confirmDialog = reactive({ show: false, title: '', body: '', onConfirm: () => {}, loading: false });
+            const showConfirm = (title, body, onConfirm) => {
+                confirmDialog.title = title;
+                confirmDialog.body = body;
+                confirmDialog.onConfirm = onConfirm;
+                confirmDialog.loading = false;
+                confirmDialog.show = true;
+            };
+            // 确认按钮执行：等异步回调完成后才关闭弹窗
+            const executeConfirm = async () => {
+                confirmDialog.loading = true;
+                try {
+                    await confirmDialog.onConfirm();
+                } finally {
+                    confirmDialog.loading = false;
+                    confirmDialog.show = false;
+                }
+            };
+
+            // ===== 登录 =====
             const isLogin = ref(false);
             const loginForm = reactive({ username: '', password: '' });
             const currentUser = ref('');
@@ -618,10 +1546,14 @@
                         localStorage.setItem('erp_token', res.data.token);
                         localStorage.setItem('erp_role', res.data.role);
                         localStorage.setItem('erp_username', res.data.username);
-                        alert("登录成功！");
                         checkLoginState();
-                    } else alert("登录失败：" + res.message);
-                } catch (error) {}
+                        showToast('登录成功，欢迎回来！', 'success');
+                    } else {
+                        showToast('登录失败：' + res.message, 'danger');
+                    }
+                } catch (error) {
+                    showToast('网络异常，请稍后重试', 'danger');
+                }
             };
 
             const logout = () => {
@@ -634,58 +1566,102 @@
 
             const currentMenu = ref('partner');
             const menuTitle = computed(() => {
-                const titleMap = { 'partner': '往来单位', 'goods': '商品管理', 'inbound': '采购入库', 'approve': '单据审批', 'outbound': '销售出库', 'stock': '实时库存台账', 'finance': '财务看板', 'report': '报表中心' };
-                return titleMap[currentMenu.value];
+                const m = { partner: '往来单位', goods: '商品管理', inbound: '采购入库', approve: '单据审批', outbound: '销售出库', stock: '库存台账', finance: '财务看板', report: '报表中心' };
+                return m[currentMenu.value] || '';
             });
 
+            // ===== 商品 =====
             const goodsList = ref([]);
             const newGoods = reactive({ code: '', name: '', unit: '' });
-            const loadGoodsList = async () => { const res = await axios.get('/goods/list'); if (res.code === 200) goodsList.value = res.data; };
+            const loadGoodsList = async () => {
+                const res = await axios.get('/goods/list');
+                if (res.code === 200) goodsList.value = res.data;
+            };
             const submitAddGoods = async () => {
                 const res = await axios.post('/goods/add', newGoods);
-                if (res.code === 200) { alert('添加成功！'); newGoods.code=''; newGoods.name=''; newGoods.unit=''; loadGoodsList(); }
-                else alert('添加失败：' + res.message);
+                if (res.code === 200) {
+                    showToast('商品添加成功！', 'success');
+                    newGoods.code = ''; newGoods.name = ''; newGoods.unit = '';
+                    loadGoodsList();
+                } else {
+                    showToast('添加失败：' + res.message, 'danger');
+                }
             };
 
+            // ===== 往来单位 =====
             const partnerList = ref([]);
             const newPartner = reactive({ code: '', name: '', type: 1, contact: '' });
-            const loadPartnerList = async () => { const res = await axios.get('/partner/list'); if (res.code === 200) partnerList.value = res.data; };
+            const loadPartnerList = async () => {
+                const res = await axios.get('/partner/list');
+                if (res.code === 200) partnerList.value = res.data;
+            };
             const submitAddPartner = async () => {
                 const res = await axios.post('/partner/add', newPartner);
-                if (res.code === 200) { alert('添加成功！'); newPartner.code=''; newPartner.name=''; newPartner.contact=''; loadPartnerList(); }
-                else alert('添加失败：' + res.message);
+                if (res.code === 200) {
+                    showToast('往来单位添加成功！', 'success');
+                    newPartner.code = ''; newPartner.name = ''; newPartner.contact = '';
+                    loadPartnerList();
+                } else {
+                    showToast('添加失败：' + res.message, 'danger');
+                }
             };
 
+            // ===== 入/出库 =====
             const inboundData = reactive({ partnerId: '', goodsId: '', quantity: '', unitPrice: '' });
             const outboundData = reactive({ partnerId: '', goodsId: '', quantity: '', unitPrice: '' });
 
             const submitInbound = async () => {
                 const res = await axios.post('/order/inbound', inboundData);
-                if (res.code === 200) { alert(res.data); inboundData.goodsId=''; inboundData.quantity=''; inboundData.unitPrice=''; }
-                else alert('入库失败：' + res.message);
+                if (res.code === 200) {
+                    showToast(res.data || '入库单提交成功，等待审批', 'success');
+                    inboundData.goodsId = ''; inboundData.quantity = ''; inboundData.unitPrice = '';
+                } else {
+                    showToast('入库失败：' + res.message, 'danger');
+                }
             };
+
             const submitOutbound = async () => {
                 const res = await axios.post('/order/outbound', outboundData);
-                if (res.code === 200) { alert(res.data); outboundData.goodsId=''; outboundData.quantity=''; outboundData.unitPrice=''; }
-                else alert('出库失败：' + res.message);
+                if (res.code === 200) {
+                    showToast(res.data || '出库单提交成功', 'success');
+                    outboundData.goodsId = ''; outboundData.quantity = ''; outboundData.unitPrice = '';
+                } else {
+                    showToast('出库失败：' + res.message, 'danger');
+                }
             };
 
+            // ===== 审批 =====
             const pendingOrders = ref([]);
-            const loadPendingOrders = async () => { const res = await axios.get('/order/pending'); if (res.code === 200) pendingOrders.value = res.data; };
-            const doApprove = async (orderId) => {
-                if (!confirm("确定审核通过并让库存生效吗？操作不可逆！")) return;
-                const res = await axios.post(`/order/approve/inbound/${orderId}`);
-                if (res.code === 200) { alert('单据审核通过，库存和财务已入账！'); loadPendingOrders(); }
-                else alert('审核失败：' + res.message);
+            const loadPendingOrders = async () => {
+                const res = await axios.get('/order/pending');
+                if (res.code === 200) pendingOrders.value = res.data;
+            };
+            const doApprove = (orderId) => {
+                showConfirm(
+                    '确认审核通过？',
+                    '审核通过后，库存与财务将立即入账，此操作不可逆，请确认无误后执行。',
+                    async () => {
+                        const res = await axios.post(`/order/approve/inbound/${orderId}`);
+                        if (res.code === 200) {
+                            showToast('审核通过，库存和财务已入账', 'success');
+                            loadPendingOrders();
+                        } else {
+                            showToast('审核失败：' + res.message, 'danger');
+                        }
+                    }
+                );
             };
 
+            // ===== 库存 =====
             const stockList = ref([]);
-            const loadStockLedger = async () => { const res = await axios.get('/stock/ledger'); if (res.code === 200) stockList.value = res.data; };
-
+            const loadStockLedger = async () => {
+                const res = await axios.get('/stock/ledger');
+                if (res.code === 200) stockList.value = res.data;
+            };
             const exportStockExcel = () => {
                 const token = localStorage.getItem('erp_token');
-                if (!token) return alert("请先登录");
-                axios({ url: '/stock/export', method: 'GET', responseType: 'blob' }).then((response) => {
+                if (!token) return showToast('请先登录', 'warning');
+                axios({ url: '/stock/export', method: 'GET', responseType: 'blob' }).then(response => {
                     const url = window.URL.createObjectURL(new Blob([response]));
                     const link = document.createElement('a');
                     link.href = url;
@@ -693,9 +1669,11 @@
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                }).catch(err => { alert("导出失败！"); });
+                    showToast('导出成功', 'success');
+                }).catch(() => showToast('导出失败，请稍后重试', 'danger'));
             };
 
+            // ===== 财务 =====
             const accountList = ref([]);
             const accountFilterType = ref('');
             const loadAccountList = async () => {
@@ -706,16 +1684,24 @@
                 } catch (e) { console.error(e); }
             };
             const changeAccountFilter = (type) => { accountFilterType.value = type; loadAccountList(); };
-            const doSettleAccount = async (item) => {
+
+            const doSettleAccount = (item) => {
                 const actionName = item.type === 1 ? '支付货款' : '确认收款';
-                if (!confirm(`确定要执行【${actionName}】 ¥${item.amount} 吗？\n操作后此账单将标记为已结清！`)) return;
-                try {
-                    const res = await axios.post(`/finance/settle/${item.accountId}`);
-                    if (res.code === 200) {
-                        alert(`操作成功！已完成 ${actionName}`);
-                        loadAccountList(); loadFinanceData();
-                    } else alert('操作失败：' + res.message);
-                } catch (e) { console.error(e); }
+                showConfirm(
+                    `确认执行【${actionName}】？`,
+                    `金额：¥${item.amount}\n往来单位：${item.partnerName}\n\n操作后此账单将标记为已结清，请确认无误。`,
+                    async () => {
+                        try {
+                            const res = await axios.post(`/finance/settle/${item.accountId}`);
+                            if (res.code === 200) {
+                                showToast(`${actionName} 操作成功`, 'success');
+                                loadAccountList(); loadFinanceData();
+                            } else {
+                                showToast('操作失败：' + res.message, 'danger');
+                            }
+                        } catch (e) { console.error(e); }
+                    }
+                );
             };
 
             const financeData = reactive({ totalPayable: 0, totalReceivable: 0, totalSales: 0, totalProfit: 0 });
@@ -729,6 +1715,7 @@
                 }
             };
 
+            // ===== 报表 =====
             const stockAgeList = ref([]);
             const debtAgeList = ref([]);
             const loadReports = async () => {
@@ -739,32 +1726,40 @@
                     if (resDebt.code === 200) debtAgeList.value = resDebt.data;
                 } catch (e) { console.error(e); }
             };
-            const getBadgeClass = (days) => {
-                if (days < 30) return 'bg-success';
-                if (days < 90) return 'bg-warning text-dark';
-                return 'bg-danger';
+
+            const getBadgeClassCustom = (days) => {
+                if (days < 30) return 'badge-success';
+                if (days < 90) return 'badge-warning';
+                return 'badge-danger';
             };
 
-            // === 核心：ECharts 图表渲染逻辑 ===
+            // ===== ECharts =====
+            // 将图表实例提升到外层作用域，方便 resize 监听器访问
+            let pieChartInst = null;
+            let barChartInst = null;
+
             const renderCharts = () => {
                 Vue.nextTick(() => {
                     const pieDom = document.getElementById('financePieChart');
                     if (pieDom) {
-                        const pieChart = echarts.init(pieDom);
-                        pieChart.setOption({
-                            title: { text: '公司资金分布概览', left: 'center', textStyle: { fontSize: 16 } },
-                            tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
-                            legend: { bottom: '0%', left: 'center' },
-                            color: ['#ee6666', '#fac858', '#91cc75'],
+                        // 若已初始化则先销毁，避免切换菜单后重复 init 报错
+                        if (pieChartInst) { pieChartInst.dispose(); pieChartInst = null; }
+                        pieChartInst = echarts.init(pieDom, 'dark');
+                        pieChartInst.setOption({
+                            backgroundColor: 'transparent',
+                            tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)', backgroundColor: '#1a1e28', borderColor: '#2a2e3a', textStyle: { color: '#e8ecf4' } },
+                            legend: { bottom: '0%', left: 'center', textStyle: { color: '#8b94a8', fontSize: 12 } },
+                            color: ['#f43f5e', '#f59e0b', '#22c55e'],
                             series: [{
-                                type: 'pie', radius: ['40%', '70%'],
+                                type: 'pie', radius: ['42%', '68%'],
                                 avoidLabelOverlap: false,
-                                itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
-                                label: { show: false, position: 'center' },
+                                itemStyle: { borderRadius: 6, borderColor: '#13161e', borderWidth: 3 },
+                                label: { show: false },
+                                emphasis: { label: { show: true, fontSize: 14, fontWeight: 600, color: '#e8ecf4' } },
                                 data: [
-                                    { value: financeData.totalPayable, name: '应付(欠供应商)' },
-                                    { value: financeData.totalReceivable, name: '应收(客户欠款)' },
-                                    { value: financeData.totalProfit, name: '预估毛利润' }
+                                    { value: financeData.totalPayable, name: '应付账款' },
+                                    { value: financeData.totalReceivable, name: '应收账款' },
+                                    { value: financeData.totalProfit, name: '预估毛利' }
                                 ]
                             }]
                         });
@@ -772,26 +1767,52 @@
 
                     const barDom = document.getElementById('stockBarChart');
                     if (barDom && stockList.value.length > 0) {
-                        const barChart = echarts.init(barDom);
+                        if (barChartInst) { barChartInst.dispose(); barChartInst = null; }
+                        barChartInst = echarts.init(barDom, 'dark');
                         const sortedStock = [...stockList.value].sort((a, b) => b.totalCost - a.totalCost).slice(0, 5);
-                        barChart.setOption({
-                            title: { text: '商品库存资金占用 Top5', left: 'center', textStyle: { fontSize: 16 } },
-                            tooltip: { trigger: 'axis', formatter: '{b} <br/> 资金占用: ¥{c}' },
-                            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                        barChartInst.setOption({
+                            backgroundColor: 'transparent',
+                            tooltip: {
+                                trigger: 'axis',
+                                backgroundColor: '#1a1e28',
+                                borderColor: '#2a2e3a',
+                                textStyle: { color: '#e8ecf4' },
+                                formatter: params => `${params[0].name}<br/>资金占用: ¥${params[0].value}`
+                            },
+                            grid: { left: '0', right: '4%', bottom: '18%', top: '8%', containLabel: true },
                             xAxis: {
                                 type: 'category',
                                 data: sortedStock.map(item => item.goodsName),
-                                axisLabel: { interval: 0, rotate: 20, fontSize: 11 }
+                                axisLabel: { interval: 0, rotate: 18, fontSize: 11, color: '#8b94a8' },
+                                axisLine: { lineStyle: { color: '#2a2e3a' } },
+                                axisTick: { show: false }
                             },
-                            yAxis: { type: 'value' },
+                            yAxis: {
+                                type: 'value',
+                                axisLabel: { color: '#8b94a8', fontSize: 11 },
+                                splitLine: { lineStyle: { color: '#1f2433' } }
+                            },
                             series: [{
                                 data: sortedStock.map(item => item.totalCost),
                                 type: 'bar',
-                                barWidth: '40%',
-                                itemStyle: { color: '#5470c6', borderRadius: [5, 5, 0, 0] }
+                                barWidth: '45%',
+                                itemStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                        { offset: 0, color: '#4f7fff' },
+                                        { offset: 1, color: '#3d6ef0' }
+                                    ]),
+                                    borderRadius: [6, 6, 0, 0]
+                                },
+                                emphasis: { itemStyle: { color: '#6b93ff' } }
                             }]
                         });
                     }
+
+                    // ① resize 适配：窗口缩放时同步调整两张图表尺寸
+                    window.addEventListener('resize', () => {
+                        pieChartInst && pieChartInst.resize();
+                        barChartInst && barChartInst.resize();
+                    });
                 });
             };
 
@@ -808,9 +1829,9 @@
             });
 
             const formatDate = (dateStr) => {
-                if (!dateStr) return '';
-                const date = new Date(dateStr);
-                return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+                if (!dateStr) return '—';
+                const d = new Date(dateStr);
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             };
 
             onMounted(() => { checkLoginState(); });
@@ -822,15 +1843,15 @@
                 partnerList, newPartner, loadPartnerList, submitAddPartner,
                 inboundData, outboundData, submitInbound, submitOutbound,
                 pendingOrders, loadPendingOrders, doApprove,
-                stockList, loadStockLedger, exportStockExcel, formatDate,
+                stockList, loadStockLedger, exportStockExcel,
                 financeData, loadFinanceData,
                 accountList, accountFilterType, changeAccountFilter, doSettleAccount,
-                stockAgeList, debtAgeList, loadReports, getBadgeClass
-            }
+                stockAgeList, debtAgeList, loadReports, getBadgeClassCustom,
+                formatDate, toasts, confirmDialog, executeConfirm
+            };
         }
     });
     app.mount('#app');
 </script>
 </body>
 </html>
-
