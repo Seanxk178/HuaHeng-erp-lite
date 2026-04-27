@@ -1,4 +1,19 @@
 package com.erp.erplite.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+import java.util.Date;
+
+@Data
+@TableName("sys_user")
 public class User {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    private String username;
+    private String password;
+    private String token; // 新增的 token 字段
+    private String role;
+    private Date createTime;
 }

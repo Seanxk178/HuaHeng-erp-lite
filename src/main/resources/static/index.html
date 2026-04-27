@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP-Lite 进销存系统</title>
+    <!-- 引入 Bootstrap5 (负责漂亮的按钮、表格和布局) -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0-alpha3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* 简单美化一下侧边栏和主区域 */
+        body { background-color: #f8f9fa; }
+        .sidebar { min-height: 100vh; background-color: #343a40; color: white; padding-top: 20px;}
+        .sidebar .nav-link { color: #c2c7d0; cursor: pointer; margin-bottom: 5px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background-color: #495057; border-radius: 5px; }
+        .main-content { padding: 20px; }
+        /* 隐藏没渲染完的 Vue 模板，防止页面闪烁 */
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+<!-- Vue 挂载点 -->
+<div id="app" v-cloak>
+
+    <!-- ================== 登录页面 ================== -->
+    <div v-if="!isLogin" class="container d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f0f2f5;">
+        <div class="card shadow" style="width: 400px; border-radius: 10px;">
+            <div class="card-body p-5">
+                <h3 class="text-center mb-4 text-primary">ERP-Lite 登录</h3>
+                <form @submit.prevent="submitLogin">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control" v-model="loginForm.username" placeholder="请输入 admin" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">密码</label>
+                        <input type="password" class="form-control" v-model="loginForm.password" placeholder="请输入 123456" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fs-5">登 录</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================== 主系统页面 (原有的界面) ================== -->
+    <div v-else class="container-fluid">
+        <div class="row">
+            <!-- 左侧菜单栏 -->
+            <div class="col-md-2 sidebar" style="min-height: 100vh; background-color: #343a40; color: white; padding-top: 20px;">
+                <h4 class="text-center mb-4">ERP Lite</h4>
+                <ul class="nav flex-column px-2">
+                    <!-- 管理员(ADMIN) 和 采购(PURCHASE) 能看基础数据和入库 -->
+                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_PURCHASE'">
+                        <a class="nav-link" :class="{active: currentMenu === 'partner'}" @click="currentMenu = 'partner'">🤝 往来单位</a>
+                    </li>
+                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_PURCHASE'">
+                        <a class="nav-link" :class="{active: currentMenu === 'goods'}" @click="currentMenu = 'goods'">📦 商品管理</a>
+                    </li>
+                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_PURCHASE'">
+                        <a class="nav-link" :class="{active: currentMenu === 'inbound'}" @click="currentMenu = 'inbound'">📥 采购入库</a>
+                    </li>
+
+                    <!-- 管理员 和 财务(FINANCE) 能看审批、出库、台账、财务看板 -->
+                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
+                        <a class="nav-link text-danger" :class="{active: currentMenu === 'approve'}" @click="currentMenu = 'approve'">📝 单据审批</a>
+                    </li>
+                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN'">
+                        <a class="nav-link" :class="{active: currentMenu === 'outbound'}" @click="currentMenu = 'outbound'">📤 销售出库</a>
+                    </li>
+                    <li class="nav-item" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
+                        <a class="nav-link" :class="{active: currentMenu === 'stock'}" @click="currentMenu = 'stock'">📊 库存台账</a>
+                    </li>
+                    <li class="nav-item mt-3" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
+                        <a class="nav-link text-warning fw-bold" :class="{active: currentMenu === 'finance'}" @click="currentMenu = 'finance'">💰 财务看板</a>
+                    </li>
+                    <li class="nav-item mt-1" v-if="currentRole === 'ROLE_ADMIN' || currentRole === 'ROLE_FINANCE'">
+                        <a class="nav-link text-info fw-bold" :class="{active: currentMenu === 'report'}" @click="currentMenu = 'report'">📈 报表中心</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 右侧主内容区 -->
+            <div class="col-md-10 main-content" style="padding: 20px;">
+                <!-- 顶部导航条 -->
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <h3>{{ menuTitle }}</h3>
+                    <div>
+                        <span class="text-muted me-3">欢迎您，{{ currentUser }} ({{ currentRole }})</span>
+                        <button class="btn btn-sm btn-outline-danger" @click="logout">退出登录</button>
+                    </div>
+                </div>
+                <!-- ================== 0. 往来单位模块 ================== -->
+                <div v-show="currentMenu === 'partner'" class="card shadow-sm">
+                    <div class="card-body">
+                        <form @submit.prevent="submitAddPartner" class="row g-3 mb-4 align-items-end border-bottom pb-4">
+                            <div class="col-md-2">
+                                <label class="form-label">单位编码</label>
+                                <input type="text" class="form-control" v-model="newPartner.code" placeholder="如: SUP-01" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">单位名称</label>
+                                <input type="text" class="form-control" v-model="newPartner.name" placeholder="如: 华强北电子" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">类型</label>
+                                <select class="form-select" v-model="newPartner.type" required>
+                                    <option value="1">供应商</option>
+                                    <option value="2">客户</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">联系人</label>
+                                <input type="text" class="form-control" v-model="newPartner.contact" placeholder="选填">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100">➕ 添加单位</button>
+                            </div>
+                        </form>
+
+                        <table class="table table-striped table-hover align-middle">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>编码</th>
+                                <th>名称</th>
+                                <th>类型</th>
+                                <th>联系人</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="item in partnerList" :key="item.id">
+                                <td><span class="badge bg-secondary">{{ item.code }}</span></td>
+                                <td>{{ item.name }}</td>
+                                <td>
+                                        <span class="badge" :class="item.type === 1 ? 'bg-info' : 'bg-success'">
+                                            {{ item.type === 1 ? '供应商' : '客户' }}
+                                        </span>
+                                </td>
+                                <td>{{ item.contact || '-' }}</td>
+                            </tr>
+                            <tr v-if="partnerList.length === 0">
+                                <td colspan="4" class="text-center text-muted">暂无数据</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- ================== 1. 商品管理模块 ================== -->
+                <div v-show="currentMenu === 'goods'" class="card shadow-sm">
+                    <div class="card-body">
+                        <!-- 添加商品表单 -->
+                        <form @submit.prevent="submitAddGoods" class="row g-3 mb-4 align-items-end border-bottom pb-4">
+                            <div class="col-md-3">
+                                <label class="form-label">商品编码</label>
+                                <input type="text" class="form-control" v-model="newGoods.code" placeholder="如: SP-001" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">商品名称</label>
+                                <input type="text" class="form-control" v-model="newGoods.name" placeholder="如: 机械键盘" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">单位</label>
+                                <input type="text" class="form-control" v-model="newGoods.unit" placeholder="如: 个" required>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100">➕ 添加新商品</button>
+                            </div>
+                        </form>
+
+                        <!-- 商品列表表格 -->
+                        <table class="table table-striped table-hover align-middle">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>商品编码</th>
+                                <th>商品名称</th>
+                                <th>单位</th>
+                                <th>创建时间</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="item in goodsList" :key="item.id">
+                                <td>{{ item.id }}</td>
+                                <td><span class="badge bg-secondary">{{ item.code }}</span></td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.unit }}</td>
+                                <td>{{ formatDate(item.createTime) }}</td>
+                            </tr>
+                            <tr v-if="goodsList.length === 0">
+                                <td colspan="5" class="text-center text-muted">暂无商品数据</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ================== 2. 采购入库模块 ================== -->
+                <div v-show="currentMenu === 'inbound'" class="card shadow-sm">
+                    <div class="card-body">
+                        <form @submit.prevent="submitInbound" class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">供应商</label>
+                                <select class="form-select" v-model="inboundData.partnerId" required>
+                                    <option value="" disabled>--选择供应商--</option>
+                                    <option v-for="item in partnerList.filter(p => p.type === 1)" :key="item.id" :value="item.id">
+                                        {{ item.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">入库商品</label>
+                                <select class="form-select" v-model="inboundData.goodsId" required>
+                                    <option value="" disabled>--选择商品--</option>
+                                    <option v-for="item in goodsList" :key="item.id" :value="item.id">
+                                        {{ item.code }} | {{ item.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">入库数量</label>
+                                <input type="number" class="form-control" v-model.number="inboundData.quantity" min="1" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">采购单价 (元)</label>
+                                <input type="number" step="0.01" class="form-control" v-model.number="inboundData.unitPrice" min="0.01" required>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100">📥 确认入库</button>
+                            </div>
+                        </form>
+                        <div class="alert alert-info py-2" v-if="inboundData.quantity && inboundData.unitPrice">
+                            本次预计生成应付账款：<strong>{{ (inboundData.quantity * inboundData.unitPrice).toFixed(2) }}</strong> 元
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 2.5 单据审批模块 ================== -->
+                <div v-show="currentMenu === 'approve'" class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h5 class="card-title text-danger pt-1">待审批入库单</h5>
+                            <button class="btn btn-sm btn-outline-secondary" @click="loadPendingOrders">🔄 刷新列表</button>
+                        </div>
+                        <table class="table table-bordered align-middle text-center">
+                            <thead class="table-light">
+                            <tr>
+                                <th>单据编号</th>
+                                <th>供应商</th>
+                                <th>商品明细</th>
+                                <th>数量</th>
+                                <th>总金额</th>
+                                <th>提交时间</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="item in pendingOrders" :key="item.orderId">
+                                <td><code>{{ item.orderNo }}</code></td>
+                                <td>{{ item.partnerName }}</td>
+                                <td>{{ item.goodsName }}</td>
+                                <td class="text-primary fw-bold">{{ item.quantity }}</td>
+                                <td class="text-danger fw-bold">¥{{ item.totalAmount }}</td>
+                                <td>{{ formatDate(item.createTime) }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success" @click="doApprove(item.orderId)">✅ 审核通过</button>
+                                </td>
+                            </tr>
+                            <tr v-if="pendingOrders.length === 0">
+                                <td colspan="7" class="text-muted py-4">✅ 暂无待处理的单据</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- ================== 3. 销售出库模块 ================== -->
+                <div v-show="currentMenu === 'outbound'" class="card shadow-sm">
+                    <div class="card-body">
+                        <form @submit.prevent="submitOutbound" class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">客户</label>
+                                <select class="form-select" v-model="outboundData.partnerId" required>
+                                    <option value="" disabled>--选择客户--</option>
+                                    <option v-for="item in partnerList.filter(p => p.type === 2)" :key="item.id" :value="item.id">
+                                        {{ item.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">出库商品</label>
+                                <select class="form-select" v-model="outboundData.goodsId" required>
+                                    <option value="" disabled>--选择商品--</option>
+                                    <option v-for="item in goodsList" :key="item.id" :value="item.id">
+                                        {{ item.code }} | {{ item.name }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">出库数量</label>
+                                <input type="number" class="form-control" v-model.number="outboundData.quantity" min="1" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">销售单价 (元)</label>
+                                <input type="number" step="0.01" class="form-control" v-model.number="outboundData.unitPrice" min="0.01" required>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-warning w-100 text-white">📤 确认出库</button>
+                            </div>
+                        </form>
+                        <div class="alert alert-warning py-2" v-if="outboundData.quantity && outboundData.unitPrice">
+                            本次预计生成应收账款：<strong>{{ (outboundData.quantity * outboundData.unitPrice).toFixed(2) }}</strong> 元
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 4. 实时库存台账模块 ================== -->
+                <div v-show="currentMenu === 'stock'" class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h5 class="card-title mb-0 pt-1">全仓库实时库存表 (含财务成本)</h5>
+                            <button class="btn btn-sm btn-success me-2" @click="exportStockExcel">⬇️ 导出Excel</button>
+                            <button class="btn btn-sm btn-outline-primary" @click="loadStockLedger">🔄 刷新台账</button>
+                        </div>
+                        <table class="table table-bordered table-hover text-center align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>商品编码</th>
+                                <th>商品名称</th>
+                                <th>当前库存</th>
+                                <th>库存总成本 (元)</th>
+                                <th>加权平均单价 (元)</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="item in stockList" :key="item.goodsId">
+                                <td><code>{{ item.goodsCode }}</code></td>
+                                <td>{{ item.goodsName }}</td>
+                                <td>
+                                    <strong :class="{'text-danger': item.quantity === 0, 'fs-5': true}">
+                                        {{ item.quantity }} {{ item.unit }}
+                                    </strong>
+                                </td>
+                                <td><strong class="text-primary">¥ {{ item.totalCost }}</strong></td>
+                                <td><strong class="text-success">¥ {{ item.avgPrice }}</strong></td>
+                            </tr>
+                            <tr v-if="stockList.length === 0">
+                                <td colspan="5" class="text-muted py-4">暂无数据</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                 <!-- ================== 5. 财务看板模块 ================== -->
+                <div v-show="currentMenu === 'finance'">
+                    <div class="row g-4 mb-4">
+                        <!-- 应付账款卡片 -->
+                        <div class="col-md-3">
+                            <div class="card shadow-sm border-0 border-start border-danger border-4">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-2">欠供应商货款 (应付账款)</h6>
+                                    <h3 class="mb-0 text-danger">¥ {{ financeData.totalPayable }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 应收账款卡片 -->
+                        <div class="col-md-3">
+                            <div class="card shadow-sm border-0 border-start border-warning border-4">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-2">客户未结欠款 (应收账款)</h6>
+                                    <h3 class="mb-0 text-warning">¥ {{ financeData.totalReceivable }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 总销售额卡片 -->
+                        <div class="col-md-3">
+                            <div class="card shadow-sm border-0 border-start border-primary border-4">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-2">累计销售总额</h6>
+                                    <h3 class="mb-0 text-primary">¥ {{ financeData.totalSales }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 毛利润卡片 -->
+                        <div class="col-md-3">
+                            <div class="card shadow-sm border-0 border-start border-success border-4">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-2">预估毛利润</h6>
+                                    <h3 class="mb-0 text-success">¥ {{ financeData.totalProfit }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- === 动态数据图表区 (ECharts) === -->
+                    <div class="row mb-4">
+                        <!-- 左侧饼图 -->
+                        <div class="col-md-6">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body">
+                                    <div id="financePieChart" style="height: 300px; width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 右侧柱状图 -->
+                        <div class="col-md-6">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body">
+                                    <div id="stockBarChart" style="height: 300px; width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- === 财务对账明细与核销区 === -->
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">📝 财务对账单明细</h5>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary" :class="{active: accountFilterType === ''}" @click="changeAccountFilter('')">全部流水</button>
+                                    <button class="btn btn-sm btn-outline-danger" :class="{active: accountFilterType === 1}" @click="changeAccountFilter(1)">应付 (欠款)</button>
+                                    <button class="btn btn-sm btn-outline-warning" :class="{active: accountFilterType === 2}" @click="changeAccountFilter(2)">应收 (收款)</button>
+                                </div>
+                            </div>
+
+                            <table class="table table-hover align-middle text-center">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>关联单号</th>
+                                    <th>往来单位 (客户/供应商)</th>
+                                    <th>账单类型</th>
+                                    <th>发生金额</th>
+                                    <th>账单产生时间</th>
+                                    <th>核销状态</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="item in accountList" :key="item.accountId">
+                                    <td><code>{{ item.orderNo || '手工建账' }}</code></td>
+                                    <td>{{ item.partnerName }}</td>
+                                    <td>
+                                            <span class="badge" :class="item.type === 1 ? 'bg-danger' : 'bg-warning text-dark'">
+                                                {{ item.type === 1 ? '采购应付' : '销售应收' }}
+                                            </span>
+                                    </td>
+                                    <td class="fw-bold" :class="item.type === 1 ? 'text-danger' : 'text-success'">
+                                        {{ item.type === 1 ? '-' : '+' }} ¥{{ item.amount }}
+                                    </td>
+                                    <td>{{ formatDate(item.createTime) }}</td>
+                                    <td>
+                                        <span v-if="item.status === 1" class="badge bg-success">已结清</span>
+                                        <span v-else class="badge bg-secondary">未结清</span>
+                                    </td>
+                                    <td>
+                                        <button v-if="item.status === 0 && currentRole === 'ROLE_FINANCE'"
+                                                class="btn btn-sm"
+                                                :class="item.type === 1 ? 'btn-danger' : 'btn-success'"
+                                                @click="doSettleAccount(item)">
+                                            {{ item.type === 1 ? '💸 支付货款' : '💰 确认收款' }}
+                                        </button>
+                                        <span v-else-if="item.status === 1" class="text-muted small">操作完成</span>
+                                        <!-- 安全提示：如果不是财务角色，看不到核销按钮 -->
+                                        <span v-else class="text-muted small">无权限操作</span>
+                                    </td>
+                                </tr>
+                                <tr v-if="accountList.length === 0">
+                                    <td colspan="7" class="text-muted py-4">暂无财务流水记录</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 6. 报表中心模块 ================== -->
+                <div v-show="currentMenu === 'report'">
+                    <div class="row g-4">
+                        <!-- 左侧：库龄分析 -->
+                        <div class="col-md-6">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 text-primary">📦 库龄分析 (滞销预警)</h6>
+                                    <button class="btn btn-sm btn-outline-secondary" @click="loadReports">刷新</button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-hover align-middle text-center mb-0">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>商品信息</th>
+                                            <th>库存状态</th>
+                                            <th>滞留天数</th>
+                                            <th>健康度评级</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="item in stockAgeList" :key="item.code">
+                                            <td><code>{{ item.code }}</code></td>
+                                            <td>{{ item.description }}</td>
+                                            <td class="fw-bold">{{ item.days }} 天</td>
+                                            <td>
+                                                <span class="badge" :class="getBadgeClass(item.days)">{{ item.level }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="stockAgeList.length === 0"><td colspan="4" class="py-4 text-muted">暂无库存数据</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 右侧：账龄分析 -->
+                        <div class="col-md-6">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 text-warning">💰 应收账龄分析 (坏账预警)</h6>
+                                    <button class="btn btn-sm btn-outline-secondary" @click="loadReports">刷新</button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-hover align-middle text-center mb-0">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>客户信息</th>
+                                            <th>欠款详情</th>
+                                            <th>逾期天数</th>
+                                            <th>风险评级</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="item in debtAgeList" :key="item.code">
+                                            <td><code>{{ item.code }}</code></td>
+                                            <td class="text-danger fw-bold">{{ item.description }}</td>
+                                            <td class="fw-bold">{{ item.days }} 天</td>
+                                            <td>
+                                                <span class="badge" :class="getBadgeClass(item.days)">{{ item.level }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="debtAgeList.length === 0"><td colspan="4" class="py-4 text-muted">暂无欠款数据</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== 6. 报表中心模块 ================== -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 引入 Vue3 和 Axios -->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.47/vue.global.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.min.js"></script>
+<!-- 引入 ECharts 数据可视化库 -->
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
+
+<script>
+    const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+    axios.defaults.baseURL = 'http://localhost:8080';
+
+    axios.interceptors.request.use(config => {
+        const token = localStorage.getItem('erp_token');
+        if (token) config.headers['token'] = token;
+        return config;
+    }, err => Promise.reject(err));
+
+    axios.interceptors.response.use(
+        res => {
+            if (res.data.message && res.data.message.includes('NOT_LOGIN')) {
+                localStorage.removeItem('erp_token');
+                localStorage.removeItem('erp_role');
+                localStorage.removeItem('erp_username');
+                alert("登录已过期或未登录，请重新登录！");
+                window.location.reload();
+                return Promise.reject("未登录");
+            }
+            return res.data;
+        },
+        err => {
+            alert("网络请求失败：" + err.message);
+            return Promise.reject(err);
+        }
+    );
+
+    const app = createApp({
+        setup() {
+            const isLogin = ref(false);
+            const loginForm = reactive({ username: '', password: '' });
+            const currentUser = ref('');
+            const currentRole = ref('');
+
+            const loadAllBaseData = () => { loadGoodsList(); loadPartnerList(); };
+
+            const checkLoginState = () => {
+                const token = localStorage.getItem('erp_token');
+                const role = localStorage.getItem('erp_role');
+                const username = localStorage.getItem('erp_username');
+                if (token && role) {
+                    isLogin.value = true;
+                    currentUser.value = username;
+                    currentRole.value = role;
+                    if (role === 'ROLE_PURCHASE') currentMenu.value = 'inbound';
+                    else if (role === 'ROLE_FINANCE') currentMenu.value = 'finance';
+                    else currentMenu.value = 'partner';
+                    loadAllBaseData();
+                } else {
+                    isLogin.value = false;
+                }
+            };
+
+            const submitLogin = async () => {
+                try {
+                    const res = await axios.post('/user/login', loginForm);
+                    if (res.code === 200) {
+                        localStorage.setItem('erp_token', res.data.token);
+                        localStorage.setItem('erp_role', res.data.role);
+                        localStorage.setItem('erp_username', res.data.username);
+                        alert("登录成功！");
+                        checkLoginState();
+                    } else alert("登录失败：" + res.message);
+                } catch (error) {}
+            };
+
+            const logout = () => {
+                localStorage.removeItem('erp_token');
+                localStorage.removeItem('erp_role');
+                localStorage.removeItem('erp_username');
+                isLogin.value = false;
+                loginForm.password = '';
+            };
+
+            const currentMenu = ref('partner');
+            const menuTitle = computed(() => {
+                const titleMap = { 'partner': '往来单位', 'goods': '商品管理', 'inbound': '采购入库', 'approve': '单据审批', 'outbound': '销售出库', 'stock': '实时库存台账', 'finance': '财务看板', 'report': '报表中心' };
+                return titleMap[currentMenu.value];
+            });
+
+            const goodsList = ref([]);
+            const newGoods = reactive({ code: '', name: '', unit: '' });
+            const loadGoodsList = async () => { const res = await axios.get('/goods/list'); if (res.code === 200) goodsList.value = res.data; };
+            const submitAddGoods = async () => {
+                const res = await axios.post('/goods/add', newGoods);
+                if (res.code === 200) { alert('添加成功！'); newGoods.code=''; newGoods.name=''; newGoods.unit=''; loadGoodsList(); }
+                else alert('添加失败：' + res.message);
+            };
+
+            const partnerList = ref([]);
+            const newPartner = reactive({ code: '', name: '', type: 1, contact: '' });
+            const loadPartnerList = async () => { const res = await axios.get('/partner/list'); if (res.code === 200) partnerList.value = res.data; };
+            const submitAddPartner = async () => {
+                const res = await axios.post('/partner/add', newPartner);
+                if (res.code === 200) { alert('添加成功！'); newPartner.code=''; newPartner.name=''; newPartner.contact=''; loadPartnerList(); }
+                else alert('添加失败：' + res.message);
+            };
+
+            const inboundData = reactive({ partnerId: '', goodsId: '', quantity: '', unitPrice: '' });
+            const outboundData = reactive({ partnerId: '', goodsId: '', quantity: '', unitPrice: '' });
+
+            const submitInbound = async () => {
+                const res = await axios.post('/order/inbound', inboundData);
+                if (res.code === 200) { alert(res.data); inboundData.goodsId=''; inboundData.quantity=''; inboundData.unitPrice=''; }
+                else alert('入库失败：' + res.message);
+            };
+            const submitOutbound = async () => {
+                const res = await axios.post('/order/outbound', outboundData);
+                if (res.code === 200) { alert(res.data); outboundData.goodsId=''; outboundData.quantity=''; outboundData.unitPrice=''; }
+                else alert('出库失败：' + res.message);
+            };
+
+            const pendingOrders = ref([]);
+            const loadPendingOrders = async () => { const res = await axios.get('/order/pending'); if (res.code === 200) pendingOrders.value = res.data; };
+            const doApprove = async (orderId) => {
+                if (!confirm("确定审核通过并让库存生效吗？操作不可逆！")) return;
+                const res = await axios.post(`/order/approve/inbound/${orderId}`);
+                if (res.code === 200) { alert('单据审核通过，库存和财务已入账！'); loadPendingOrders(); }
+                else alert('审核失败：' + res.message);
+            };
+
+            const stockList = ref([]);
+            const loadStockLedger = async () => { const res = await axios.get('/stock/ledger'); if (res.code === 200) stockList.value = res.data; };
+
+            const exportStockExcel = () => {
+                const token = localStorage.getItem('erp_token');
+                if (!token) return alert("请先登录");
+                axios({ url: '/stock/export', method: 'GET', responseType: 'blob' }).then((response) => {
+                    const url = window.URL.createObjectURL(new Blob([response]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', '实时库存台账报表.xlsx');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }).catch(err => { alert("导出失败！"); });
+            };
+
+            const accountList = ref([]);
+            const accountFilterType = ref('');
+            const loadAccountList = async () => {
+                try {
+                    const url = accountFilterType.value === '' ? '/finance/accountList' : `/finance/accountList?type=${accountFilterType.value}`;
+                    const res = await axios.get(url);
+                    if (res.code === 200) accountList.value = res.data;
+                } catch (e) { console.error(e); }
+            };
+            const changeAccountFilter = (type) => { accountFilterType.value = type; loadAccountList(); };
+            const doSettleAccount = async (item) => {
+                const actionName = item.type === 1 ? '支付货款' : '确认收款';
+                if (!confirm(`确定要执行【${actionName}】 ¥${item.amount} 吗？\n操作后此账单将标记为已结清！`)) return;
+                try {
+                    const res = await axios.post(`/finance/settle/${item.accountId}`);
+                    if (res.code === 200) {
+                        alert(`操作成功！已完成 ${actionName}`);
+                        loadAccountList(); loadFinanceData();
+                    } else alert('操作失败：' + res.message);
+                } catch (e) { console.error(e); }
+            };
+
+            const financeData = reactive({ totalPayable: 0, totalReceivable: 0, totalSales: 0, totalProfit: 0 });
+            const loadFinanceData = async () => {
+                const res = await axios.get('/finance/dashboard');
+                if (res.code === 200) {
+                    financeData.totalPayable = res.data.totalPayable;
+                    financeData.totalReceivable = res.data.totalReceivable;
+                    financeData.totalSales = res.data.totalSales;
+                    financeData.totalProfit = res.data.totalProfit;
+                }
+            };
+
+            const stockAgeList = ref([]);
+            const debtAgeList = ref([]);
+            const loadReports = async () => {
+                try {
+                    const resStock = await axios.get('/stock/ageAnalysis');
+                    if (resStock.code === 200) stockAgeList.value = resStock.data;
+                    const resDebt = await axios.get('/finance/ageAnalysis');
+                    if (resDebt.code === 200) debtAgeList.value = resDebt.data;
+                } catch (e) { console.error(e); }
+            };
+            const getBadgeClass = (days) => {
+                if (days < 30) return 'bg-success';
+                if (days < 90) return 'bg-warning text-dark';
+                return 'bg-danger';
+            };
+
+            // === 核心：ECharts 图表渲染逻辑 ===
+            const renderCharts = () => {
+                Vue.nextTick(() => {
+                    const pieDom = document.getElementById('financePieChart');
+                    if (pieDom) {
+                        const pieChart = echarts.init(pieDom);
+                        pieChart.setOption({
+                            title: { text: '公司资金分布概览', left: 'center', textStyle: { fontSize: 16 } },
+                            tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
+                            legend: { bottom: '0%', left: 'center' },
+                            color: ['#ee6666', '#fac858', '#91cc75'],
+                            series: [{
+                                type: 'pie', radius: ['40%', '70%'],
+                                avoidLabelOverlap: false,
+                                itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+                                label: { show: false, position: 'center' },
+                                data: [
+                                    { value: financeData.totalPayable, name: '应付(欠供应商)' },
+                                    { value: financeData.totalReceivable, name: '应收(客户欠款)' },
+                                    { value: financeData.totalProfit, name: '预估毛利润' }
+                                ]
+                            }]
+                        });
+                    }
+
+                    const barDom = document.getElementById('stockBarChart');
+                    if (barDom && stockList.value.length > 0) {
+                        const barChart = echarts.init(barDom);
+                        const sortedStock = [...stockList.value].sort((a, b) => b.totalCost - a.totalCost).slice(0, 5);
+                        barChart.setOption({
+                            title: { text: '商品库存资金占用 Top5', left: 'center', textStyle: { fontSize: 16 } },
+                            tooltip: { trigger: 'axis', formatter: '{b} <br/> 资金占用: ¥{c}' },
+                            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                            xAxis: {
+                                type: 'category',
+                                data: sortedStock.map(item => item.goodsName),
+                                axisLabel: { interval: 0, rotate: 20, fontSize: 11 }
+                            },
+                            yAxis: { type: 'value' },
+                            series: [{
+                                data: sortedStock.map(item => item.totalCost),
+                                type: 'bar',
+                                barWidth: '40%',
+                                itemStyle: { color: '#5470c6', borderRadius: [5, 5, 0, 0] }
+                            }]
+                        });
+                    }
+                });
+            };
+
+            Vue.watch(currentMenu, async (newVal) => {
+                if (newVal === 'stock') loadStockLedger();
+                if (newVal === 'approve') loadPendingOrders();
+                if (newVal === 'report') loadReports();
+                if (newVal === 'finance') {
+                    await loadFinanceData();
+                    await loadAccountList();
+                    await loadStockLedger();
+                    renderCharts();
+                }
+            });
+
+            const formatDate = (dateStr) => {
+                if (!dateStr) return '';
+                const date = new Date(dateStr);
+                return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+            };
+
+            onMounted(() => { checkLoginState(); });
+
+            return {
+                isLogin, loginForm, submitLogin, logout, currentUser, currentRole,
+                currentMenu, menuTitle,
+                goodsList, newGoods, loadGoodsList, submitAddGoods,
+                partnerList, newPartner, loadPartnerList, submitAddPartner,
+                inboundData, outboundData, submitInbound, submitOutbound,
+                pendingOrders, loadPendingOrders, doApprove,
+                stockList, loadStockLedger, exportStockExcel, formatDate,
+                financeData, loadFinanceData,
+                accountList, accountFilterType, changeAccountFilter, doSettleAccount,
+                stockAgeList, debtAgeList, loadReports, getBadgeClass
+            }
+        }
+    });
+    app.mount('#app');
+</script>
+</body>
+</html>
+

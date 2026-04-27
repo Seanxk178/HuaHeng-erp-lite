@@ -1,3 +1,18 @@
+server:
+  port: 8080 # 启动端口
+
 spring:
-  application:
-    name: erp-lite
+  datasource:
+    # JDBC URL: 指定时区、开启批量处理、指定字符集
+    url: jdbc:mysql://localhost:3306/erp_lite?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    # 开启控制台打印 SQL 日志，方便我们在开发阶段排查问题
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启驼峰命名自动映射
+    map-underscore-to-camel-case: true
