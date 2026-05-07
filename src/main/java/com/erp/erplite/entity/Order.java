@@ -16,6 +16,14 @@ public class Order {
     private Long createBy;
     private Date createTime;
     private Long partnerId;
-    private Integer status; // 0-待审核, 1-已审核
+    private Integer status; // 状态：0-草稿, 1-待审核, 2-已审核, 3-作废, 4-已驳回
+    private java.math.BigDecimal totalAmount; // 订单总金额（冗余字段，提升统计性能）
+    private Long warehouseId; // 仓库ID
+    
+    @com.baomidou.mybatisplus.annotation.Version
+    private Integer version; // 乐观锁版本号
+    
+    private String contractNo; // 关联外部合同编号
+    private String remark; // 整单备注
 
 }

@@ -14,6 +14,8 @@ public class User {
     private String username;
     private String password;
     private String token; // 新增的 token 字段
+    /** Token 过期时间，登录时自动续期 8 小时 */
+    private Date tokenExpireTime;
     private String role;
     private Date createTime;
 }

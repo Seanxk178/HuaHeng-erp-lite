@@ -2,10 +2,13 @@ package com.erp.erplite.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.erp.erplite.entity.User;
+import com.erp.erplite.mapper.SysMenuMapper;
+import com.erp.erplite.mapper.SysRoleMenuMapper;
 import com.erp.erplite.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -14,6 +17,8 @@ import java.util.UUID;
 public class UserService {
 
     private final UserMapper userMapper;
+    private final SysRoleMenuMapper sysRoleMenuMapper;
+    private final SysMenuMapper sysMenuMapper;
 
     /**
      * 用户登录逻辑
@@ -55,11 +60,13 @@ public class UserService {
             throw new RuntimeException("账号或密码错误！");
         }
 
-        // 4. 生成 Token
+        // 4. 生成 Token，并设置 8 小时有效期
         String token = java.util.UUID.randomUUID().toString().replace("-", "");
         user.setToken(token);
+        // 当前时间 + 8小时（8 * 60 * 60 * 1000 毫秒）
+        user.setTokenExpireTime(new java.util.Date(System.currentTimeMillis() + 8L * 3600 * 1000));
 
-        // 5. 更新用户信息（可能包含了升级后的密文密码 和 新的 Token）
+        // 5. 更新用户信息（密文密码 + 新 Token + 过期时间）
         userMapper.updateById(user);
 
         log.info("用户 {} 登录成功", username);
@@ -69,6 +76,17 @@ public class UserService {
         vo.setToken(token);
         vo.setRole(user.getRole());
         vo.setUsername(user.getUsername());
+
+        // 7. 查询该用户角色对应的菜单权限（ROLE_ADMIN 返回全部菜单）
+        List<String> menuKeys;
+        if ("ROLE_ADMIN".equals(user.getRole())) {
+            menuKeys = sysMenuMapper.selectList(null)
+                    .stream().map(com.erp.erplite.entity.SysMenu::getMenuKey).toList();
+        } else {
+            menuKeys = sysRoleMenuMapper.selectMenuKeysByRoleKey(user.getRole());
+        }
+        vo.setMenuKeys(menuKeys);
+
         return vo;
     }
 }

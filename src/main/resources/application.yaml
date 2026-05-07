@@ -1,11 +1,18 @@
 server:
+#  port: 8089 # 启动端口
   port: 8080 # 启动端口
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB       # 单个文件最大限制
+      max-request-size: 20MB   # 单次请求最大总限制
   datasource:
     # JDBC URL: 指定时区、开启批量处理、指定字符集
     url: jdbc:mysql://localhost:3306/erp_lite?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+#    url: jdbc:mysql://localhost:3308/erp_lite?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
     username: root
+#    username: admin
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
@@ -16,3 +23,7 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 开启驼峰命名自动映射
     map-underscore-to-camel-case: true
+
+erp:
+  upload:
+    image-path: E:/erp-lite/uploads/images/

@@ -12,7 +12,9 @@ public class OrderDetail {
     private Long id;
     private Long orderId;
     private Long goodsId;
-    private Integer quantity;
+    private java.math.BigDecimal quantity;
     private java.math.BigDecimal unitPrice;
     private java.math.BigDecimal totalAmount;
+    private java.math.BigDecimal costAmount;
+    private String remark; // 单行商品备注
 }

@@ -19,6 +19,9 @@ public class StockVO {
     @ExcelProperty("商品编码")
     private String goodsCode;
 
+    @ExcelProperty("仓库ID")
+    private Long warehouseId;
+
     @ExcelProperty("商品名称")
     private String goodsName;
 
@@ -26,7 +29,7 @@ public class StockVO {
     private String unit;
 
     @ExcelProperty("当前库存数量")
-    private Integer quantity;
+    private java.math.BigDecimal quantity;
 
     @ExcelProperty("库存总成本(元)")
     private BigDecimal totalCost;

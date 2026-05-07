@@ -45,16 +45,16 @@ public class FinanceService {
     }
 
     // --- 查询账款列表 ---
-    public java.util.List<FinAccountVO> getAccountList(Integer type) {
-        log.info("查询账款明细列表, 类型: {}", type);
-        return finAccountMapper.getAccountList(type);
+    public com.baomidou.mybatisplus.core.metadata.IPage<FinAccountVO> getAccountList(Integer type, String startDate, String endDate, String keyword, int pageNum, int pageSize) {
+        log.info("查询账款明细列表, 类型: {}, 分页: {}/{}", type, pageNum, pageSize);
+        return finAccountMapper.getAccountList(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), type, startDate, endDate, keyword);
     }
 
-    // --- 核销账款 (将未结清改为已结清) ---
+    // --- 核销账款 (支持分期付款) ---
     @Log("执行了财务核销操作") //
     @Transactional(rollbackFor = Exception.class)
-    public void settleAccount(Long accountId) {
-        log.info("准备核销账款, ID: {}", accountId);
+    public void settleAccount(Long accountId, BigDecimal payAmount) {
+        log.info("准备核销账款, ID: {}, 本次实付金额: {}", accountId, payAmount);
         com.erp.erplite.entity.FinAccount account = finAccountMapper.selectById(accountId);
         if (account == null) {
             throw new RuntimeException("账单不存在");
@@ -62,10 +62,29 @@ public class FinanceService {
         if (account.getStatus() == 1) {
             throw new RuntimeException("该账单已结清，请勿重复操作");
         }
-        // 标记为已结清
-        account.setStatus(1);
+
+        // 处理分期付款逻辑
+        BigDecimal currentPaid = account.getPaidAmount() != null ? account.getPaidAmount() : BigDecimal.ZERO;
+        
+        if (payAmount != null && payAmount.compareTo(BigDecimal.ZERO) > 0) {
+            currentPaid = currentPaid.add(payAmount);
+        } else {
+            // 如果前端没传本次金额，默认全额结清剩余欠款
+            currentPaid = account.getAmount();
+        }
+
+        account.setPaidAmount(currentPaid);
+
+        // 如果已付金额 >= 应付金额，标记为已结清
+        if (currentPaid.compareTo(account.getAmount()) >= 0) {
+            account.setStatus(1);
+            account.setPaidAmount(account.getAmount()); // 防御超付
+            log.info("账单 ID:{} 全额结清！", accountId);
+        } else {
+            log.info("账单 ID:{} 部分结清，当前已结: {}/{}", accountId, account.getPaidAmount(), account.getAmount());
+        }
+
         finAccountMapper.updateById(account);
-        log.info("账单核销成功！金额: {}", account.getAmount());
     }
 
     /**
@@ -85,7 +104,8 @@ public class FinanceService {
         for (FinAccount debt : debtList) {
             AnalysisVO vo = new AnalysisVO();
             vo.setCode("客户ID: " + debt.getPartnerId());
-            vo.setDescription("拖欠货款: ¥" + debt.getAmount());
+            BigDecimal remain = debt.getAmount().subtract(debt.getPaidAmount() != null ? debt.getPaidAmount() : BigDecimal.ZERO);
+            vo.setDescription("拖欠货款: ¥" + remain);
 
             // 账单产生时间到现在过了多久
             long createTime = debt.getCreateTime() != null ? debt.getCreateTime().getTime() : currentTime;

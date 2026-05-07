@@ -9,7 +9,7 @@ public class OrderVO {
     private String orderNo;
     private String partnerName; // 供应商名称
     private String goodsName;   // 商品名称
-    private Integer quantity;   // 数量
+    private java.math.BigDecimal quantity;   // 数量
     private BigDecimal totalAmount; // 总金额
     private Integer status;     // 审核状态
     private Date createTime;

@@ -15,9 +15,11 @@ public interface StockMapper extends BaseMapper<Stock> {
             "g.code AS goodsCode, " +
             "g.name AS goodsName, " +
             "g.unit AS unit, " +
+            "s.warehouse_id AS warehouseId, " +
             "IFNULL(s.quantity, 0) AS quantity, " +
-            "IFNULL(s.total_cost, 0.00) AS totalCost " + // 新增查询总成本
+            "IFNULL(s.total_cost, 0.00) AS totalCost " +
             "FROM base_goods g " +
             "LEFT JOIN inv_stock s ON g.id = s.goods_id")
-    List<StockVO> getStockLedger();
+    com.baomidou.mybatisplus.core.metadata.IPage<StockVO> getStockLedger(
+            com.baomidou.mybatisplus.extension.plugins.pagination.Page<StockVO> page);
 }

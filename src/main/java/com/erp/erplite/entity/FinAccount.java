@@ -14,7 +14,9 @@ public class FinAccount {
     private Long partnerId;
     private Long orderId;
     private Integer type; // 1-应付(采购), 2-应收(销售)
-    private BigDecimal amount;
+    private BigDecimal amount; // 应付/应收总额
+    private BigDecimal paidAmount; // 已付/已收金额
+    private BigDecimal unpaidAmount; // 未结清的尾款金额
     private Integer status; // 0-未结清, 1-已结清
     private Date createTime;
 }

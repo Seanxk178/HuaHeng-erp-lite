@@ -5,12 +5,14 @@ import com.erp.erplite.entity.AnalysisVO;
 import com.erp.erplite.entity.FinAccountVO;
 import com.erp.erplite.entity.FinanceDashboardVO;
 import com.erp.erplite.service.FinanceService;
+import com.erp.erplite.common.RequireRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/finance")
 @RequiredArgsConstructor
+@RequireRole({"finance"})
 public class FinanceController {
 
     private final FinanceService financeService;
@@ -23,12 +25,16 @@ public class FinanceController {
 
     /**
      * 获取账款明细列表
-     * GET /finance/accountList?type=1 (可选参数)
      */
     @GetMapping("/accountList")
-    public Result<java.util.List<FinAccountVO>> getAccountList(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer type) {
-        return Result.success(financeService.getAccountList(type));
+    public Result<com.baomidou.mybatisplus.core.metadata.IPage<FinAccountVO>> getAccountList(
+            @RequestParam(required = false) Integer type,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        return Result.success(financeService.getAccountList(type, startDate, endDate, keyword, pageNum, pageSize));
     }
 
     /**
@@ -36,8 +42,9 @@ public class FinanceController {
      * POST /finance/settle/{accountId}
      */
     @PostMapping("/settle/{accountId}")
-    public Result<String> settleAccount(@PathVariable Long accountId) {
-        financeService.settleAccount(accountId);
+    public Result<String> settleAccount(@PathVariable Long accountId, 
+                                      @RequestParam(required = false) java.math.BigDecimal payAmount) {
+        financeService.settleAccount(accountId, payAmount);
         return Result.success("账款核销成功");
     }
 

@@ -13,7 +13,10 @@ public class SysLog {
     private String username;
     private String operation;
     private String method;
-    private String params;
+    private String params; // 请求参数（建议在数据库层设置较大长度或TEXT类型）
+    private Integer status; // 执行状态：1-成功, 0-失败
+    private String errorMsg; // 异常堆栈信息
+    private Long timeCost; // 接口耗时(ms)
     private String ip;
     private Date createTime;
 }

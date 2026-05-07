@@ -27,9 +27,39 @@ public class Goods {
     private String name;
 
     /**
+     * 物料分类
+     */
+    private String category;
+
+    /**
+     * 品牌
+     */
+    private String brand;
+
+    /**
      * 计量单位
      */
     private String unit;
+
+    /**
+     * 规格型号
+     */
+    private String spec;
+
+    /**
+     * 全局默认指导价 (用于无头盘盈的成本初始化)
+     */
+    private java.math.BigDecimal defaultPrice;
+
+    /**
+     * 商品图示网络路径
+     */
+    private String imageUrl;
+
+    /**
+     * 状态: 1-启用, 0-停用
+     */
+    private Integer status;
 
     /**
      * 创建时间

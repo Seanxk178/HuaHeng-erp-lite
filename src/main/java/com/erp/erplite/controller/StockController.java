@@ -7,13 +7,16 @@ import com.erp.erplite.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.erp.erplite.common.RequireRole;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/stock")
 @RequiredArgsConstructor
+@RequireRole({"warehouse", "finance", "admin"})
 public class StockController {
 
     private final StockService stockService;
@@ -23,9 +26,10 @@ public class StockController {
      * 请求方式: GET /stock/ledger
      */
     @GetMapping("/ledger")
-    public Result<List<StockVO>> getStockLedger() {
-        List<StockVO> list = stockService.getStockLedger();
-        return Result.success(list);
+    public Result<com.baomidou.mybatisplus.core.metadata.IPage<StockVO>> getStockLedger(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        return Result.success(stockService.getStockLedger(pageNum, pageSize));
     }
 
     @GetMapping("/ageAnalysis")
@@ -47,8 +51,8 @@ public class StockController {
             String fileName = java.net.URLEncoder.encode("实时库存台账报表", "UTF-8").replaceAll("\\+", "%20");
             response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
 
-            // 2. 获取业务数据 (复用之前写好的台账查询逻辑)
-            java.util.List<com.erp.erplite.entity.StockVO> dataList = stockService.getStockLedger();
+            // 2. 获取业务数据 (复用之前写好的台账查询逻辑，全量导出这里取前1000条或后续改为流式)
+            java.util.List<com.erp.erplite.entity.StockVO> dataList = stockService.getStockLedger(1, 1000).getRecords();
 
             // 3. 使用 EasyExcel 写入数据并输出到浏览器
             com.alibaba.excel.EasyExcel.write(response.getOutputStream(), com.erp.erplite.entity.StockVO.class)

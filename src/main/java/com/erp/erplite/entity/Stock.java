@@ -13,7 +13,8 @@ public class Stock {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long goodsId;
-    private Integer quantity;
+    private Long warehouseId; // 仓库ID
+    private java.math.BigDecimal quantity;
 
     @Version // 乐观锁版本号，防止并发超卖的关键
     private Integer version;

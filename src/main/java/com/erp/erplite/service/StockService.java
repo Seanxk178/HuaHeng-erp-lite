@@ -19,22 +19,22 @@ public class StockService {
     /**
      * 获取实时库存台账
      */
-    public List<StockVO> getStockLedger() {
-        log.info("查询实时库存台账(含财务)");
-        List<StockVO> list = stockMapper.getStockLedger();
+    public com.baomidou.mybatisplus.core.metadata.IPage<StockVO> getStockLedger(int pageNum, int pageSize) {
+        log.info("查询实时库存台账(含财务), 分页: {}/{}", pageNum, pageSize);
+        com.baomidou.mybatisplus.core.metadata.IPage<StockVO> page = stockMapper.getStockLedger(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize));
 
         // 遍历计算移动加权平均单价
-        for (StockVO vo : list) {
-            if (vo.getQuantity() > 0 && vo.getTotalCost() != null) {
+        for (StockVO vo : page.getRecords()) {
+            if (vo.getQuantity() != null && vo.getQuantity().compareTo(java.math.BigDecimal.ZERO) > 0 && vo.getTotalCost() != null) {
                 // 单价 = 总成本 / 数量。注意：除法必须指定保留几位小数和舍入规则，否则遇到除不尽会报错！
                 // ROUND_HALF_UP 就是四舍五入
-                java.math.BigDecimal avg = vo.getTotalCost().divide(new java.math.BigDecimal(vo.getQuantity()), 2, java.math.RoundingMode.HALF_UP);
+                java.math.BigDecimal avg = vo.getTotalCost().divide(vo.getQuantity(), 2, java.math.RoundingMode.HALF_UP);
                 vo.setAvgPrice(avg);
             } else {
                 vo.setAvgPrice(java.math.BigDecimal.ZERO);
             }
         }
-        return list;
+        return page;
     }
 
     /**
