@@ -20,6 +20,11 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public Result<?> handleException(Exception e) {
+        // 如果是浏览器请求 favicon.ico 找不到，直接过滤掉，避免打印无用的长堆栈
+        if (e instanceof org.springframework.web.servlet.resource.NoResourceFoundException) {
+            return Result.error(404, "资源未找到: " + e.getMessage());
+        }
+
         // 1. 打印完整的错误日志到控制台，方便开发排查
         log.error("系统发生异常，异常信息: ", e);
 

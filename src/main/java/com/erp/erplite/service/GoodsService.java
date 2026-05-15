@@ -50,4 +50,17 @@ public class GoodsService {
         goodsMapper.insert(goods);
         log.info("新增商品成功, ID: {}", goods.getId());
     }
+
+    /**
+     * 更新商品信息
+     */
+    public void updateGoods(Goods goods) {
+        if (goods.getId() == null) throw new RuntimeException("商品ID不能为空");
+        QueryWrapper<Goods> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("code", goods.getCode()).ne("id", goods.getId());
+        if (goodsMapper.exists(queryWrapper)) {
+            throw new RuntimeException("商品编码已存在，请更换编码！");
+        }
+        goodsMapper.updateById(goods);
+    }
 }

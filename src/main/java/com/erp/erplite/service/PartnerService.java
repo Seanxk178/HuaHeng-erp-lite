@@ -44,4 +44,17 @@ public class PartnerService {
         partnerMapper.insert(partner);
         log.info("往来单位新增成功, ID: {}", partner.getId());
     }
+
+    /**
+     * 更新往来单位
+     */
+    public void updatePartner(Partner partner) {
+        if (partner.getId() == null) throw new RuntimeException("单位ID不能为空");
+        QueryWrapper<Partner> query = new QueryWrapper<>();
+        query.eq("code", partner.getCode()).ne("id", partner.getId());
+        if (partnerMapper.exists(query)) {
+            throw new RuntimeException("往来单位编码已存在，请更换！");
+        }
+        partnerMapper.updateById(partner);
+    }
 }

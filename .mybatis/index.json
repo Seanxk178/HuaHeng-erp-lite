@@ -1,17 +1,12 @@
 {
   "version": "1.0",
-  "timestamp": 1778056017351,
+  "timestamp": 1778320162373,
   "projectRoot": "e:\\erp-lite\\erp-lite",
   "entries": [
     {
       "path": "target\\classes\\com\\erp\\erplite\\config\\WebMvcConfig.class",
       "mtime": 1777520948901.2861,
       "size": 1643
-    },
-    {
-      "path": "target\\classes\\com\\erp\\erplite\\config\\WebConfig.class",
-      "mtime": 1778036294704.0083,
-      "size": 3040
     },
     {
       "path": "target\\classes\\com\\erp\\erplite\\ErpLiteApplication.class",
@@ -22,6 +17,11 @@
       "path": "target\\classes\\com\\erp\\erplite\\config\\MybatisPlusConfig.class",
       "mtime": 1778053603750.4338,
       "size": 1300
+    },
+    {
+      "path": "target\\classes\\com\\erp\\erplite\\config\\WebConfig.class",
+      "mtime": 1778312858756.2532,
+      "size": 3040
     }
   ]
 }

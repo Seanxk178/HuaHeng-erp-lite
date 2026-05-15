@@ -34,4 +34,13 @@ public class PartnerController {
         partnerService.addPartner(partner);
         return Result.success("往来单位添加成功");
     }
+
+    /**
+     * 更新往来单位
+     */
+    @PostMapping("/update")
+    public Result<String> updatePartner(@RequestBody Partner partner) {
+        partnerService.updatePartner(partner);
+        return Result.success("往来单位修改成功");
+    }
 }

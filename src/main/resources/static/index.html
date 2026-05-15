@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP-Lite · 企业管理系统</title>
+    <title>华恒进销存系统</title>
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
         rel="stylesheet">
@@ -14,35 +14,40 @@
            DESIGN TOKENS — 企业级精英深色主题
         ============================================================ */
         :root {
-            --bg-base: #0d0f14;
-            --bg-surface: #13161e;
-            --bg-elevated: #1a1e28;
-            --bg-hover: #1f2433;
-            --bg-input: #161922;
+            --bg-base: #f3f4f6;
+            /* 极简浅灰背景 */
+            --bg-surface: #ffffff;
+            /* 纯白面板 */
+            --bg-elevated: #ffffff;
+            --bg-hover: #f9fafb;
+            --bg-input: #f8f9fa;
 
-            --border-subtle: rgba(255, 255, 255, 0.06);
-            --border-default: rgba(255, 255, 255, 0.10);
-            --border-strong: rgba(255, 255, 255, 0.18);
+            --border-subtle: rgba(0, 0, 0, 0.05);
+            --border-default: rgba(0, 0, 0, 0.08);
+            --border-strong: rgba(0, 0, 0, 0.15);
 
-            --text-primary: #e8ecf4;
-            --text-secondary: #8b94a8;
-            --text-muted: #545c6e;
-            --text-inverse: #0d0f14;
+            --text-primary: #111827;
+            /* 极深灰，高对比度文字 */
+            --text-secondary: #4b5563;
+            /* 中灰，次要信息 */
+            --text-muted: #9ca3af;
+            --text-inverse: #ffffff;
 
-            --accent: #4f7fff;
-            --accent-dim: rgba(79, 127, 255, 0.12);
-            --accent-glow: rgba(79, 127, 255, 0.35);
+            --accent: #2563eb;
+            /* SaaS蓝 */
+            --accent-dim: rgba(37, 99, 235, 0.1);
+            --accent-glow: rgba(37, 99, 235, 0.25);
 
-            --success: #22c55e;
-            --success-dim: rgba(34, 197, 94, 0.12);
-            --danger: #f43f5e;
-            --danger-dim: rgba(244, 63, 94, 0.12);
+            --success: #10b981;
+            --success-dim: rgba(16, 185, 129, 0.12);
+            --danger: #ef4444;
+            --danger-dim: rgba(239, 68, 68, 0.12);
             --warning: #f59e0b;
             --warning-dim: rgba(245, 158, 11, 0.12);
             --info: #06b6d4;
             --info-dim: rgba(6, 182, 212, 0.12);
 
-            --sidebar-w: 220px;
+            --sidebar-w: 240px;
             --topbar-h: 64px;
             --radius-sm: 6px;
             --radius-md: 10px;
@@ -52,12 +57,12 @@
             --font-body: 'DM Sans', -apple-system, sans-serif;
             --font-mono: 'DM Mono', 'Fira Code', monospace;
 
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.03);
             --shadow-glow: 0 0 24px var(--accent-glow);
 
-            --transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -134,7 +139,7 @@
             border: 1px solid var(--border-default);
             border-radius: var(--radius-xl);
             padding: 48px 40px;
-            box-shadow: var(--shadow-lg), 0 0 80px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--shadow-lg), 0 0 80px rgba(37, 99, 235, 0.08);
         }
 
         .login-logo {
@@ -1060,6 +1065,98 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* ============================================================
+           UX/UI 微动画与玻璃态增强 (Glassmorphism & Micro-interactions)
+        ============================================================ */
+        .topbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 8888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-content {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px) scale(0.98);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .data-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--bg-hover) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-card {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-glow);
+        }
+
+        .btn-custom {
+            transition: all 0.2s ease;
+        }
+
+        .btn-custom:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-custom:active:not(:disabled) {
+            transform: translateY(0);
+        }
     </style>
 </head>
 
@@ -1116,8 +1213,8 @@
             <div class="login-grid"></div>
             <div class="login-panel">
                 <div class="login-logo">
-                    <div class="login-logo-mark">E</div>
-                    <span class="login-logo-text">ERP Lite</span>
+                    <div class="login-logo-mark">华</div>
+                    <span class="login-logo-text">华恒进销存系统</span>
                 </div>
                 <p class="login-subtitle">企业级进销存数字化管理平台</p>
                 <form @submit.prevent="submitLogin">
@@ -1142,8 +1239,8 @@
             <!-- 左侧导航 -->
             <aside class="sidebar">
                 <div class="sidebar-header">
-                    <div class="brand-mark">E</div>
-                    <span class="brand-text">ERP Lite</span>
+                    <div class="brand-mark">华</div>
+                    <span class="brand-text">华恒进销存系统</span>
                     <span class="brand-version">v2.0</span>
                 </div>
 
@@ -1283,7 +1380,7 @@
                 <header class="topbar">
                     <div>
                         <div class="topbar-title">{{ menuTitle }}</div>
-                        <div class="topbar-breadcrumb">ERP-Lite / {{ menuTitle }}</div>
+                        <div class="topbar-breadcrumb">华恒进销存系统 / {{ menuTitle }}</div>
                     </div>
                 </header>
 
@@ -1333,13 +1430,17 @@
                                         </div>
                                         <div class="form-col-auto">
                                             <label class="field-label" style="visibility:hidden">提交</label>
-                                            <button type="submit" class="btn-custom btn-primary-custom">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2.5">
-                                                    <line x1="12" y1="5" x2="12" y2="19" />
-                                                    <line x1="5" y1="12" x2="19" y2="12" />
-                                                </svg>
-                                                添加单位
+                                            <button type="submit" class="btn-custom btn-primary-custom"
+                                                :disabled="isSubmitting">
+                                                <span v-if="isSubmitting">处理中...</span>
+                                                <template v-else>
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2.5">
+                                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                                    </svg>
+                                                    添加单位
+                                                </template>
                                             </button>
                                         </div>
                                     </div>
@@ -1348,9 +1449,14 @@
                         </div>
 
                         <div class="card-custom">
-                            <div class="card-header-custom">
-                                <div class="card-title">往来单位列表</div>
-                                <span class="badge-custom badge-neutral">共 {{ partnerList.length }} 条</span>
+                            <div class="card-header-custom"
+                                style="display:flex; justify-content:space-between; align-items:center;">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div class="card-title">往来单位列表</div>
+                                    <span class="badge-custom badge-neutral">共 {{ filteredPartners.length }} 条</span>
+                                </div>
+                                <input type="text" class="field-input" v-model="partnerSearchKeyword"
+                                    placeholder="🔍 搜索名称或编码..." style="width:200px; padding:6px 12px; font-size:13px;">
                             </div>
                             <div class="table-wrap">
                                 <table class="data-table">
@@ -1360,10 +1466,11 @@
                                             <th>名称</th>
                                             <th>类型</th>
                                             <th>联系人</th>
+                                            <th>操作</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="item in partnerList" :key="item.id">
+                                        <tr v-for="item in paginatedPartners" :key="item.id">
                                             <td><span class="badge-custom badge-neutral td-mono">{{ item.code }}</span>
                                             </td>
                                             <td class="td-strong">{{ item.name }}</td>
@@ -1374,12 +1481,30 @@
                                                 </span>
                                             </td>
                                             <td>{{ item.contact || '—' }}</td>
+                                            <td>
+                                                <button class="btn-custom btn-ghost btn-sm-custom"
+                                                    @click="openEditPartner(item)">编辑</button>
+                                            </td>
                                         </tr>
-                                        <tr class="empty-row" v-if="partnerList.length === 0">
-                                            <td colspan="4">暂无数据，请添加往来单位</td>
+                                        <tr class="empty-row" v-if="paginatedPartners.length === 0">
+                                            <td colspan="4">暂无匹配的单位数据</td>
                                         </tr>
                                     </tbody>
                                 </table>
+                            </div>
+                            <!-- 往来单位分页 -->
+                            <div class="card-footer-custom"
+                                style="padding: 12px 24px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;"
+                                v-if="filteredPartners.length > 10">
+                                <div class="text-muted-custom" style="font-size: 12px;">共 {{ filteredPartners.length }}
+                                    条 / 第 {{ partnerPage }} 页</div>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn-custom btn-ghost btn-sm-custom" :disabled="partnerPage <= 1"
+                                        @click="partnerPage--">上一页</button>
+                                    <button class="btn-custom btn-ghost btn-sm-custom"
+                                        :disabled="partnerPage * 10 >= filteredPartners.length"
+                                        @click="partnerPage++">下一页</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1437,13 +1562,17 @@
                                         </div>
                                         <div class="form-col-auto">
                                             <label class="field-label" style="visibility:hidden">提交</label>
-                                            <button type="submit" class="btn-custom btn-primary-custom">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2.5">
-                                                    <line x1="12" y1="5" x2="12" y2="19" />
-                                                    <line x1="5" y1="12" x2="19" y2="12" />
-                                                </svg>
-                                                添加商品
+                                            <button type="submit" class="btn-custom btn-primary-custom"
+                                                :disabled="isSubmitting">
+                                                <span v-if="isSubmitting">处理中...</span>
+                                                <template v-else>
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2.5">
+                                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                                    </svg>
+                                                    添加商品
+                                                </template>
                                             </button>
                                         </div>
                                     </div>
@@ -1452,9 +1581,15 @@
                         </div>
 
                         <div class="card-custom">
-                            <div class="card-header-custom">
-                                <div class="card-title">商品列表</div>
-                                <span class="badge-custom badge-neutral">共 {{ goodsList.length }} 种</span>
+                            <div class="card-header-custom"
+                                style="display:flex; justify-content:space-between; align-items:center;">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div class="card-title">商品列表</div>
+                                    <span class="badge-custom badge-neutral">共 {{ filteredGoods.length }} 种</span>
+                                </div>
+                                <input type="text" class="field-input" v-model="goodsSearchKeyword"
+                                    placeholder="🔍 搜索名称/编码/分类..."
+                                    style="width:200px; padding:6px 12px; font-size:13px;">
                             </div>
                             <div class="table-wrap">
                                 <table class="data-table">
@@ -1468,10 +1603,11 @@
                                             <th>单位</th>
                                             <th>图示</th>
                                             <th>创建时间</th>
+                                            <th>操作</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="item in goodsList" :key="item.id">
+                                        <tr v-for="item in paginatedGoods" :key="item.id">
                                             <td class="td-mono" style="color:var(--text-muted)">{{ item.id }}</td>
                                             <td><span class="badge-custom badge-neutral td-mono">{{ item.code }}</span>
                                             </td>
@@ -1487,12 +1623,30 @@
                                             </td>
                                             <td class="td-mono" style="color:var(--text-muted); font-size:12px;">{{
                                                 formatDate(item.createTime) }}</td>
+                                            <td>
+                                                <button class="btn-custom btn-ghost btn-sm-custom"
+                                                    @click="openEditGoods(item)">编辑</button>
+                                            </td>
                                         </tr>
-                                        <tr class="empty-row" v-if="goodsList.length === 0">
-                                            <td colspan="8">暂无商品数据</td>
+                                        <tr class="empty-row" v-if="paginatedGoods.length === 0">
+                                            <td colspan="8">暂无匹配的商品数据</td>
                                         </tr>
                                     </tbody>
                                 </table>
+                            </div>
+                            <!-- 商品分页 -->
+                            <div class="card-footer-custom"
+                                style="padding: 12px 24px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;"
+                                v-if="filteredGoods.length > 10">
+                                <div class="text-muted-custom" style="font-size: 12px;">共 {{ filteredGoods.length }} 种 /
+                                    第 {{ goodsPage }} 页</div>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn-custom btn-ghost btn-sm-custom" :disabled="goodsPage <= 1"
+                                        @click="goodsPage--">上一页</button>
+                                    <button class="btn-custom btn-ghost btn-sm-custom"
+                                        :disabled="goodsPage * 10 >= filteredGoods.length"
+                                        @click="goodsPage++">下一页</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1516,20 +1670,31 @@
                                     <div class="form-row">
                                         <div class="form-col">
                                             <label class="field-label">供应商</label>
-                                            <div class="field-select-wrap">
-                                                <select class="field-select" v-model="inboundData.partnerId" required>
+                                            <div class="field-select-wrap"
+                                                style="display:flex; flex-direction:column; gap:4px; background:var(--bg-input); border:1px solid var(--border-default); border-radius:var(--radius-sm); padding:4px;">
+                                                <input type="text" v-model="inboundSupplierSearch"
+                                                    placeholder="🔍 搜索供应商" class="field-input"
+                                                    style="padding:4px 8px; font-size:12px; border:none; background:transparent;">
+                                                <select class="field-select" v-model="inboundData.partnerId" required
+                                                    style="border:none; border-top:1px solid var(--border-subtle); border-radius:0;">
                                                     <option value="" disabled>— 选择供应商 —</option>
-                                                    <option v-for="item in partnerList.filter(p => p.type === 1)"
-                                                        :key="item.id" :value="item.id">{{ item.name }}</option>
+                                                    <option v-for="item in filteredInboundSuppliers" :key="item.id"
+                                                        :value="item.id">{{ item.name }}</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="form-col">
                                             <label class="field-label">入库商品</label>
-                                            <div class="field-select-wrap">
-                                                <select class="field-select" v-model="inboundData.goodsId" required>
+                                            <div class="field-select-wrap"
+                                                style="display:flex; flex-direction:column; gap:4px; background:var(--bg-input); border:1px solid var(--border-default); border-radius:var(--radius-sm); padding:4px;">
+                                                <input type="text" v-model="inboundGoodsSearch" placeholder="🔍 搜索商品"
+                                                    class="field-input"
+                                                    style="padding:4px 8px; font-size:12px; border:none; background:transparent;">
+                                                <select class="field-select" v-model="inboundData.goodsId" required
+                                                    style="border:none; border-top:1px solid var(--border-subtle); border-radius:0;">
                                                     <option value="" disabled>— 选择商品 —</option>
-                                                    <option v-for="item in goodsList" :key="item.id" :value="item.id">{{
+                                                    <option v-for="item in filteredInboundGoods" :key="item.id"
+                                                        :value="item.id">{{
                                                         item.code }} · {{ item.name }}</option>
                                                 </select>
                                             </div>
@@ -1547,12 +1712,16 @@
                                         </div>
                                         <div class="form-col-auto">
                                             <label class="field-label" style="visibility:hidden">提交</label>
-                                            <button type="submit" class="btn-custom btn-success-custom">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2.5">
-                                                    <polyline points="20 6 9 17 4 12" />
-                                                </svg>
-                                                提交单据
+                                            <button type="submit" class="btn-custom btn-success-custom"
+                                                :disabled="isSubmitting">
+                                                <span v-if="isSubmitting">处理中...</span>
+                                                <template v-else>
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2.5">
+                                                        <polyline points="20 6 9 17 4 12" />
+                                                    </svg>
+                                                    提交单据
+                                                </template>
                                             </button>
                                         </div>
                                     </div>
@@ -1663,20 +1832,31 @@
                                     <div class="form-row">
                                         <div class="form-col">
                                             <label class="field-label">客户</label>
-                                            <div class="field-select-wrap">
-                                                <select class="field-select" v-model="outboundData.partnerId" required>
+                                            <div class="field-select-wrap"
+                                                style="display:flex; flex-direction:column; gap:4px; background:var(--bg-input); border:1px solid var(--border-default); border-radius:var(--radius-sm); padding:4px;">
+                                                <input type="text" v-model="outboundCustomerSearch"
+                                                    placeholder="🔍 搜索客户" class="field-input"
+                                                    style="padding:4px 8px; font-size:12px; border:none; background:transparent;">
+                                                <select class="field-select" v-model="outboundData.partnerId" required
+                                                    style="border:none; border-top:1px solid var(--border-subtle); border-radius:0;">
                                                     <option value="" disabled>— 选择客户 —</option>
-                                                    <option v-for="item in partnerList.filter(p => p.type === 2)"
-                                                        :key="item.id" :value="item.id">{{ item.name }}</option>
+                                                    <option v-for="item in filteredOutboundCustomers" :key="item.id"
+                                                        :value="item.id">{{ item.name }}</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="form-col">
                                             <label class="field-label">出库商品</label>
-                                            <div class="field-select-wrap">
-                                                <select class="field-select" v-model="outboundData.goodsId" required>
+                                            <div class="field-select-wrap"
+                                                style="display:flex; flex-direction:column; gap:4px; background:var(--bg-input); border:1px solid var(--border-default); border-radius:var(--radius-sm); padding:4px;">
+                                                <input type="text" v-model="outboundGoodsSearch" placeholder="🔍 搜索商品"
+                                                    class="field-input"
+                                                    style="padding:4px 8px; font-size:12px; border:none; background:transparent;">
+                                                <select class="field-select" v-model="outboundData.goodsId" required
+                                                    style="border:none; border-top:1px solid var(--border-subtle); border-radius:0;">
                                                     <option value="" disabled>— 选择商品 —</option>
-                                                    <option v-for="item in goodsList" :key="item.id" :value="item.id">{{
+                                                    <option v-for="item in filteredOutboundGoods" :key="item.id"
+                                                        :value="item.id">{{
                                                         item.code }} · {{ item.name }}</option>
                                                 </select>
                                             </div>
@@ -1694,13 +1874,18 @@
                                         </div>
                                         <div class="form-col-auto">
                                             <label class="field-label" style="visibility:hidden">提交</label>
-                                            <button type="submit" class="btn-custom btn-primary-custom">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2.5">
-                                                    <polyline points="17 8 12 3 7 8" />
-                                                    <line x1="12" y1="3" x2="12" y2="15" />
-                                                </svg>
-                                                确认出库
+                                            <button type="submit" class="btn-custom btn-primary-custom"
+                                                :disabled="isSubmitting">
+                                                <span v-if="isSubmitting">处理中...</span>
+                                                <template v-else>
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2.5">
+                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                        <polyline points="17 8 12 3 7 8" />
+                                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                                    </svg>
+                                                    确认出库
+                                                </template>
                                             </button>
                                         </div>
                                     </div>
@@ -1729,6 +1914,15 @@
                                     <span class="badge-custom badge-accent">核心财务</span>
                                 </div>
                                 <div style="display:flex;gap:8px;">
+                                    <button class="btn-custom btn-primary-custom btn-sm-custom"
+                                        @click="openInventoryCheck">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2.5">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                        库存盘点
+                                    </button>
                                     <button class="btn-custom btn-success-custom btn-sm-custom"
                                         @click="exportStockExcel">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -1846,6 +2040,7 @@
                                             <th>总额</th>
                                             <th>时间</th>
                                             <th>状态</th>
+                                            <th>操作</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1872,6 +2067,12 @@
                                                 <span v-else-if="item.status === 4"
                                                     class="badge-custom badge-danger">已驳回</span>
                                                 <span v-else class="badge-custom badge-neutral">已作废</span>
+                                            </td>
+                                            <td>
+                                                <button class="btn-custom btn-ghost btn-sm-custom"
+                                                    @click="printOrder(item)">
+                                                    打印单据
+                                                </button>
                                             </td>
                                         </tr>
                                         <tr class="empty-row" v-if="historyList.length === 0">
@@ -2288,6 +2489,148 @@
             </main>
         </div>
 
+        <!-- 编辑商品弹窗 -->
+        <div class="modal-overlay" v-if="editGoodsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">编辑商品</div>
+                    <button class="btn-custom btn-ghost btn-sm-custom" @click="editGoodsModal = false">关闭</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="field-label">商品编码</label>
+                            <input type="text" class="field-input" v-model="editGoodsData.code">
+                        </div>
+                        <div class="form-col">
+                            <label class="field-label">商品名称</label>
+                            <input type="text" class="field-input" v-model="editGoodsData.name">
+                        </div>
+                        <div class="form-col">
+                            <label class="field-label">分类</label>
+                            <input type="text" class="field-input" v-model="editGoodsData.category">
+                        </div>
+                        <div class="form-col">
+                            <label class="field-label">单位</label>
+                            <input type="text" class="field-input" v-model="editGoodsData.unit">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer"
+                    style="padding: 16px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 12px;">
+                    <button class="btn-custom btn-ghost" @click="editGoodsModal = false">取消</button>
+                    <button class="btn-custom btn-primary-custom" :disabled="isSubmitting" @click="submitEditGoods">
+                        {{ isSubmitting ? '保存中...' : '保存修改' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 编辑往来单位弹窗 -->
+        <div class="modal-overlay" v-if="editPartnerModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">编辑往来单位</div>
+                    <button class="btn-custom btn-ghost btn-sm-custom" @click="editPartnerModal = false">关闭</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label class="field-label">单位编码</label>
+                            <input type="text" class="field-input" v-model="editPartnerData.code">
+                        </div>
+                        <div class="form-col">
+                            <label class="field-label">单位名称</label>
+                            <input type="text" class="field-input" v-model="editPartnerData.name">
+                        </div>
+                        <div class="form-col">
+                            <label class="field-label">联系人</label>
+                            <input type="text" class="field-input" v-model="editPartnerData.contact">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer"
+                    style="padding: 16px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 12px;">
+                    <button class="btn-custom btn-ghost" @click="editPartnerModal = false">取消</button>
+                    <button class="btn-custom btn-primary-custom" :disabled="isSubmitting" @click="submitEditPartner">
+                        {{ isSubmitting ? '保存中...' : '保存修改' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 库存盘点弹窗 -->
+        <div class="modal-overlay" v-if="inventoryCheckModal">
+            <div class="modal-content" style="max-width:400px;">
+                <div class="modal-header">
+                    <div class="modal-title">库存盘点调整</div>
+                    <button class="btn-custom btn-ghost btn-sm-custom" @click="inventoryCheckModal = false">关闭</button>
+                </div>
+                <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+                    <div>
+                        <label class="field-label">盘点商品</label>
+                        <select class="field-select" v-model="inventoryData.goodsId" required>
+                            <option value="" disabled>— 请选择商品 —</option>
+                            <option v-for="item in goodsList" :key="item.id" :value="item.id">
+                                {{ item.code }} · {{ item.name }}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">实盘数量 (真实查账数量)</label>
+                        <input type="number" min="0" step="0.01" class="field-input"
+                            v-model="inventoryData.actualQuantity" placeholder="输入库管员实际盘点数">
+                    </div>
+                    <div
+                        style="font-size:12px; color:var(--text-muted); background:var(--bg-elevated); padding:8px; border-radius:4px;">
+                        注意：提交后系统将强制覆盖当前库存为该数量，并自动记录一条平账差异流水。此操作不可逆。
+                    </div>
+                </div>
+                <div class="modal-footer"
+                    style="padding: 16px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 12px;">
+                    <button class="btn-custom btn-ghost" @click="inventoryCheckModal = false">取消</button>
+                    <button class="btn-custom btn-primary-custom"
+                        :disabled="isSubmitting || !inventoryData.goodsId || inventoryData.actualQuantity === ''"
+                        @click="submitInventoryCheck">
+                        {{ isSubmitting ? '处理中...' : '确认平账' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 财务结算弹窗 -->
+        <div class="modal-overlay" v-if="settleModal">
+            <div class="modal-content" style="max-width:400px;">
+                <div class="modal-header">
+                    <div class="modal-title">账款处理</div>
+                    <button class="btn-custom btn-ghost btn-sm-custom" @click="settleModal = false">关闭</button>
+                </div>
+                <div class="modal-body" style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="font-size:14px;"><strong>往来单位：</strong>{{ settleData.partnerName }}</div>
+                    <div style="font-size:14px;"><strong>总金额：</strong>¥ {{ settleData.amount }}</div>
+                    <div style="font-size:14px; color:var(--danger-color);"><strong>剩余欠款：</strong>¥ {{
+                        settleData.unpaidAmount }}</div>
+                    <hr style="border:none; border-top:1px solid var(--border-subtle); margin:8px 0;">
+                    <div>
+                        <label class="field-label">本次结款金额</label>
+                        <input type="number" min="0" step="0.01" :max="settleData.unpaidAmount" class="field-input"
+                            v-model="settleData.payAmount">
+                    </div>
+                    <div style="font-size:12px; color:var(--text-muted);">
+                        可支持部分付款/收款。若输入全额，账单将标记为已结清。
+                    </div>
+                </div>
+                <div class="modal-footer"
+                    style="padding: 16px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 12px;">
+                    <button class="btn-custom btn-ghost" @click="settleModal = false">取消</button>
+                    <button class="btn-custom btn-primary-custom" :disabled="isSubmitting || settleData.payAmount <= 0"
+                        @click="submitSettleAccount">
+                        {{ isSubmitting ? '处理中...' : '确认收/付款' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="js/vue.global.min.js"></script>
@@ -2525,15 +2868,37 @@
                         partner: '往来单位', goods: '商品管理', inbound: '采购入库',
                         approve: '单据审批', outbound: '销售出库', stock: '库存台账',
                         finance: '财务看板', report: '报表中心', history: '历史订单',
-                        syslogs: '系统日志'
+                        sysconfig: '系统设置', syslogs: '系统日志'
                     };
                     return m[currentMenu.value] || '';
                 });
+
+                // ===== 通用防抖与 Loading 状态 =====
+                const isSubmitting = ref(false);
 
                 // ===== 商品 =====
                 const goodsList = ref([]);
                 const newGoods = reactive({ code: '', name: '', unit: '', category: '', brand: '', imageUrl: '' });
                 const previewImageUrl = ref('');
+
+                // 商品列表搜索与分页
+                const goodsSearchKeyword = ref('');
+                const goodsPage = ref(1);
+                const filteredGoods = computed(() => {
+                    if (!goodsSearchKeyword.value) return goodsList.value;
+                    const kw = goodsSearchKeyword.value.toLowerCase();
+                    return goodsList.value.filter(g =>
+                        g.name.toLowerCase().includes(kw) ||
+                        g.code.toLowerCase().includes(kw) ||
+                        (g.category && g.category.toLowerCase().includes(kw))
+                    );
+                });
+                const paginatedGoods = computed(() => {
+                    const start = (goodsPage.value - 1) * 10;
+                    return filteredGoods.value.slice(start, start + 10);
+                });
+                watch(goodsSearchKeyword, () => goodsPage.value = 1);
+
                 const uploadImage = async (event) => {
                     const file = event.target.files[0];
                     if (!file) return;
@@ -2557,34 +2922,111 @@
                     const res = await axios.get('/goods/list');
                     if (res.code === 200) goodsList.value = res.data;
                 };
+
+                // 编辑商品
+                const editGoodsModal = ref(false);
+                const editGoodsData = reactive({ id: '', code: '', name: '', unit: '', category: '', brand: '', imageUrl: '' });
+                const openEditGoods = (item) => {
+                    Object.assign(editGoodsData, item);
+                    editGoodsModal.value = true;
+                };
+                const submitEditGoods = async () => {
+                    if (isSubmitting.value) return;
+                    isSubmitting.value = true;
+                    try {
+                        const res = await axios.post('/goods/update', editGoodsData);
+                        if (res.code === 200) {
+                            showToast('商品修改成功！', 'success');
+                            editGoodsModal.value = false;
+                            loadGoodsList();
+                        } else {
+                            showToast('修改失败：' + res.message, 'danger');
+                        }
+                    } finally {
+                        isSubmitting.value = false;
+                    }
+                };
+
                 const submitAddGoods = async () => {
-                    const res = await axios.post('/goods/add', newGoods);
-                    if (res.code === 200) {
-                        showToast('商品添加成功！', 'success');
-                        newGoods.code = ''; newGoods.name = ''; newGoods.unit = ''; newGoods.category = ''; newGoods.brand = ''; newGoods.imageUrl = '';
-                        const fileInput = document.querySelector('input[type="file"]');
-                        if (fileInput) fileInput.value = '';
-                        loadGoodsList();
-                    } else {
-                        showToast('添加失败：' + res.message, 'danger');
+                    if (isSubmitting.value) return;
+                    isSubmitting.value = true;
+                    try {
+                        const res = await axios.post('/goods/add', newGoods);
+                        if (res.code === 200) {
+                            showToast('商品添加成功！', 'success');
+                            newGoods.code = ''; newGoods.name = ''; newGoods.unit = ''; newGoods.category = ''; newGoods.brand = ''; newGoods.imageUrl = '';
+                            const fileInput = document.querySelector('input[type="file"]');
+                            if (fileInput) fileInput.value = '';
+                            loadGoodsList();
+                        } else {
+                            showToast('添加失败：' + res.message, 'danger');
+                        }
+                    } finally {
+                        isSubmitting.value = false;
                     }
                 };
 
                 // ===== 往来单位 =====
                 const partnerList = ref([]);
                 const newPartner = reactive({ code: '', name: '', type: 1, contact: '' });
+
+                // 往来单位搜索与分页
+                const partnerSearchKeyword = ref('');
+                const partnerPage = ref(1);
+                const filteredPartners = computed(() => {
+                    if (!partnerSearchKeyword.value) return partnerList.value;
+                    const kw = partnerSearchKeyword.value.toLowerCase();
+                    return partnerList.value.filter(p => p.name.toLowerCase().includes(kw) || p.code.toLowerCase().includes(kw));
+                });
+                const paginatedPartners = computed(() => {
+                    const start = (partnerPage.value - 1) * 10;
+                    return filteredPartners.value.slice(start, start + 10);
+                });
+                watch(partnerSearchKeyword, () => partnerPage.value = 1);
+
                 const loadPartnerList = async () => {
                     const res = await axios.get('/partner/list');
                     if (res.code === 200) partnerList.value = res.data;
                 };
+
+                // 编辑往来单位
+                const editPartnerModal = ref(false);
+                const editPartnerData = reactive({ id: '', code: '', name: '', type: 1, contact: '' });
+                const openEditPartner = (item) => {
+                    Object.assign(editPartnerData, item);
+                    editPartnerModal.value = true;
+                };
+                const submitEditPartner = async () => {
+                    if (isSubmitting.value) return;
+                    isSubmitting.value = true;
+                    try {
+                        const res = await axios.post('/partner/update', editPartnerData);
+                        if (res.code === 200) {
+                            showToast('往来单位修改成功！', 'success');
+                            editPartnerModal.value = false;
+                            loadPartnerList();
+                        } else {
+                            showToast('修改失败：' + res.message, 'danger');
+                        }
+                    } finally {
+                        isSubmitting.value = false;
+                    }
+                };
+
                 const submitAddPartner = async () => {
-                    const res = await axios.post('/partner/add', newPartner);
-                    if (res.code === 200) {
-                        showToast('往来单位添加成功！', 'success');
-                        newPartner.code = ''; newPartner.name = ''; newPartner.contact = '';
-                        loadPartnerList();
-                    } else {
-                        showToast('添加失败：' + res.message, 'danger');
+                    if (isSubmitting.value) return;
+                    isSubmitting.value = true;
+                    try {
+                        const res = await axios.post('/partner/add', newPartner);
+                        if (res.code === 200) {
+                            showToast('往来单位添加成功！', 'success');
+                            newPartner.code = ''; newPartner.name = ''; newPartner.contact = '';
+                            loadPartnerList();
+                        } else {
+                            showToast('添加失败：' + res.message, 'danger');
+                        }
+                    } finally {
+                        isSubmitting.value = false;
                     }
                 };
 
@@ -2592,23 +3034,81 @@
                 const inboundData = reactive({ partnerId: '', goodsId: '', quantity: '', unitPrice: '' });
                 const outboundData = reactive({ partnerId: '', goodsId: '', quantity: '', unitPrice: '' });
 
+                // 下拉框模糊搜索过滤
+                const inboundSupplierSearch = ref('');
+                const inboundGoodsSearch = ref('');
+                const outboundCustomerSearch = ref('');
+                const outboundGoodsSearch = ref('');
+
+                const filteredInboundSuppliers = computed(() => {
+                    const suppliers = partnerList.value.filter(p => p.type === 1);
+                    if (!inboundSupplierSearch.value) return suppliers;
+                    return suppliers.filter(p => p.name.toLowerCase().includes(inboundSupplierSearch.value.toLowerCase()));
+                });
+                const filteredInboundGoods = computed(() => {
+                    if (!inboundGoodsSearch.value) return goodsList.value;
+                    return goodsList.value.filter(g => g.name.toLowerCase().includes(inboundGoodsSearch.value.toLowerCase()) || g.code.toLowerCase().includes(inboundGoodsSearch.value.toLowerCase()));
+                });
+                const filteredOutboundCustomers = computed(() => {
+                    const customers = partnerList.value.filter(p => p.type === 2);
+                    if (!outboundCustomerSearch.value) return customers;
+                    return customers.filter(p => p.name.toLowerCase().includes(outboundCustomerSearch.value.toLowerCase()));
+                });
+                const filteredOutboundGoods = computed(() => {
+                    if (!outboundGoodsSearch.value) return goodsList.value;
+                    return goodsList.value.filter(g => g.name.toLowerCase().includes(outboundGoodsSearch.value.toLowerCase()) || g.code.toLowerCase().includes(outboundGoodsSearch.value.toLowerCase()));
+                });
+
                 const submitInbound = async () => {
-                    const res = await axios.post('/order/inbound', inboundData);
-                    if (res.code === 200) {
-                        showToast(res.data || '入库单提交成功，等待审批', 'success');
-                        inboundData.goodsId = ''; inboundData.quantity = ''; inboundData.unitPrice = '';
-                    } else {
-                        showToast('入库失败：' + res.message, 'danger');
+                    if (isSubmitting.value) return;
+                    isSubmitting.value = true;
+                    try {
+                        const res = await axios.post('/order/inbound', inboundData);
+                        if (res.code === 200) {
+                            showToast(res.data || '入库单提交成功，等待审批', 'success');
+                            inboundData.goodsId = ''; inboundData.quantity = ''; inboundData.unitPrice = '';
+                        } else {
+                            showToast('入库失败：' + res.message, 'danger');
+                        }
+                    } finally {
+                        isSubmitting.value = false;
                     }
                 };
 
+                // 前置库存拦截辅助方法
+                const getAllStockMap = async () => {
+                    try {
+                        const res = await axios.get('/stock/ledger?pageNum=1&pageSize=1000');
+                        if (res.code === 200) {
+                            const map = {};
+                            res.data.records.forEach(s => map[s.goodsId] = s.quantity);
+                            return map;
+                        }
+                    } catch (e) { }
+                    return {};
+                };
+
                 const submitOutbound = async () => {
-                    const res = await axios.post('/order/outbound', outboundData);
-                    if (res.code === 200) {
-                        showToast(res.data || '出库单提交成功', 'success');
-                        outboundData.goodsId = ''; outboundData.quantity = ''; outboundData.unitPrice = '';
-                    } else {
-                        showToast('出库失败：' + res.message, 'danger');
+                    if (isSubmitting.value) return;
+                    isSubmitting.value = true;
+                    try {
+                        // 出库前校验库存
+                        const map = await getAllStockMap();
+                        const currentStock = map[outboundData.goodsId] || 0;
+                        if (outboundData.quantity > currentStock) {
+                            showToast(`当前商品库存不足！可用库存：${currentStock}`, 'danger');
+                            return;
+                        }
+
+                        const res = await axios.post('/order/outbound', outboundData);
+                        if (res.code === 200) {
+                            showToast(res.data || '出库单提交成功', 'success');
+                            outboundData.goodsId = ''; outboundData.quantity = ''; outboundData.unitPrice = '';
+                        } else {
+                            showToast('出库失败：' + res.message, 'danger');
+                        }
+                    } finally {
+                        isSubmitting.value = false;
                     }
                 };
 
@@ -2662,6 +3162,68 @@
                     }
                 };
 
+                // 打印单据
+                const printOrder = (item) => {
+                    const printWindow = window.open('', '_blank');
+                    const isPurchase = item.type === 1;
+                    const html = `
+                        <html>
+                        <head>
+                            <title>单据打印 - ${item.orderNo}</title>
+                            <style>
+                                body { font-family: "Microsoft YaHei", sans-serif; padding: 40px; color: #333; }
+                                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+                                .title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+                                .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; font-size: 14px; }
+                                table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+                                th, td { border: 1px solid #000; padding: 10px; text-align: center; font-size: 14px; }
+                                .footer { display: flex; justify-content: space-between; margin-top: 50px; font-size: 14px; }
+                                .sign-box { border-bottom: 1px solid #000; width: 150px; display: inline-block; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <div class="title">华恒进销存系统${isPurchase ? '入库' : '出库'}单</div>
+                                <div>打印时间：${new Date().toLocaleString()}</div>
+                            </div>
+                            <div class="info-grid">
+                                <div><strong>单据编号：</strong>${item.orderNo}</div>
+                                <div><strong>业务时间：</strong>${formatDate(item.createTime)}</div>
+                                <div><strong>往来单位：</strong>${item.partnerName}</div>
+                                <div><strong>业务类型：</strong>${isPurchase ? '采购入库' : '销售出库'}</div>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>商品明细</th>
+                                        <th>数量</th>
+                                        <th>总金额</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>${item.goodsName}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>¥ ${item.totalAmount}</td>
+                                        <td>${item.status === 1 ? '已生效' : (item.status === 0 ? '待审批' : '其他')}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="footer">
+                                <div>制单人签字：<span class="sign-box"></span></div>
+                                <div>${isPurchase ? '库管员' : '客户'}签字：<span class="sign-box"></span></div>
+                            </div>
+                            \x3Cscript>
+                                window.onload = function() { window.print(); window.onafterprint = function(){ window.close(); } };
+                            \x3C/script>
+                        </body>
+                        </html>
+                    `;
+                    printWindow.document.write(html);
+                    printWindow.document.close();
+                };
+
                 // ===== 库存 =====
                 const stockList = ref([]);
                 const loadStockLedger = async (page = 1) => {
@@ -2672,6 +3234,36 @@
                         stockTotal.value = res.data.total;
                     }
                 };
+                // ===== 库存盘点 =====
+                const inventoryCheckModal = ref(false);
+                const inventoryData = reactive({ goodsId: '', actualQuantity: '' });
+                const openInventoryCheck = () => {
+                    inventoryData.goodsId = '';
+                    inventoryData.actualQuantity = '';
+                    inventoryCheckModal.value = true;
+                };
+                const submitInventoryCheck = async () => {
+                    if (isSubmitting.value) return;
+                    isSubmitting.value = true;
+                    try {
+                        const param = {
+                            goodsId: inventoryData.goodsId,
+                            warehouseId: 1, // 默认主仓库
+                            actualQuantity: inventoryData.actualQuantity
+                        };
+                        const res = await axios.post('/order/inventory/check', param);
+                        if (res.code === 200) {
+                            showToast('盘点完成，系统账面已自动更新平账', 'success');
+                            inventoryCheckModal.value = false;
+                            loadStockLedger(stockPage.value);
+                        } else {
+                            showToast('盘点失败：' + res.message, 'danger');
+                        }
+                    } finally {
+                        isSubmitting.value = false;
+                    }
+                };
+
                 const exportStockExcel = () => {
                     const token = localStorage.getItem('erp_token');
                     if (!token) return showToast('请先登录', 'warning');
@@ -2714,24 +3306,40 @@
                     }
                 };
 
+                const settleModal = ref(false);
+                const settleData = reactive({ accountId: '', partnerName: '', amount: 0, unpaidAmount: 0, payAmount: 0 });
+
                 const doSettleAccount = (item) => {
-                    const actionName = item.type === 1 ? '支付货款' : '确认收款';
-                    showConfirm(
-                        `确认执行【${actionName}】？`,
-                        `金额：¥${item.amount}\n往来单位：${item.partnerName}\n\n操作后此账单将标记为已结清，请确认无误。`,
-                        async () => {
-                            try {
-                                const res = await axios.post(`/finance/settle/${item.accountId}`);
-                                if (res.code === 200) {
-                                    showToast(`${actionName} 操作成功`, 'success');
-                                    loadAccountList(); loadFinanceData();
-                                } else {
-                                    showToast('操作失败：' + res.message, 'danger');
-                                }
-                            } catch (e) { console.error(e); }
-                        }
-                    );
+                    settleData.accountId = item.accountId;
+                    settleData.partnerName = item.partnerName;
+                    settleData.amount = item.amount;
+                    // 如果后端没有返回 paidAmount，则暂时假定为 0（但由于已经是多次付款机制，需要计算）
+                    // 为了支持部分结算，默认应收减去已收，这里假设 item.paidAmount 存在。若不存在则用 item.amount
+                    settleData.unpaidAmount = item.amount; // 若后端新增了未付金额字段，可在此取用
+                    if (item.status === 2) settleData.unpaidAmount = 0; // 已结清
+                    settleData.payAmount = settleData.unpaidAmount; // 默认带出剩余全款
+                    settleModal.value = true;
                 };
+
+                const submitSettleAccount = async () => {
+                    if (isSubmitting.value || settleData.payAmount <= 0) return;
+                    isSubmitting.value = true;
+                    try {
+                        // 使用 URL 参数或者 query 参数传 payAmount
+                        const res = await axios.post(`/finance/settle/${settleData.accountId}?payAmount=${settleData.payAmount}`);
+                        if (res.code === 200) {
+                            showToast('操作成功', 'success');
+                            settleModal.value = false;
+                            loadAccountList(); loadFinanceData();
+                        } else {
+                            showToast('操作失败：' + res.message, 'danger');
+                        }
+                    } finally {
+                        isSubmitting.value = false;
+                    }
+                };
+
+                const openSettleModal = doSettleAccount; // 兼容旧绑定
 
                 const financeData = reactive({ totalPayable: 0, totalReceivable: 0, totalSales: 0, totalProfit: 0 });
                 const loadFinanceData = async () => {
@@ -2757,34 +3365,30 @@
                 };
 
                 const getBadgeClassCustom = (days) => {
-                    if (days < 30) return 'badge-success';
-                    if (days < 90) return 'badge-warning';
-                    return 'badge-danger';
+                    if (days < 30) return 'badge-success'; if (days < 90) return 'badge-warning'; return 'badge-danger';
                 };
-
-                // ===== ECharts =====
-                // 将图表实例提升到外层作用域，方便 resize 监听器访问
-                let pieChartInst = null;
-                let barChartInst = null;
-
-                const renderCharts = () => {
+                //=====ECharts=====// 将图表实例提升到外层作用域，方便 resize 监听器访问 let pieChartInst=null; let barChartInst=null; const
+                renderCharts = () => {
                     Vue.nextTick(() => {
                         const pieDom = document.getElementById('financePieChart');
                         if (pieDom) {
                             // 若已初始化则先销毁，避免切换菜单后重复 init 报错
                             if (pieChartInst) { pieChartInst.dispose(); pieChartInst = null; }
-                            pieChartInst = echarts.init(pieDom, 'dark');
+                            pieChartInst = echarts.init(pieDom);
                             pieChartInst.setOption({
                                 backgroundColor: 'transparent',
-                                tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)', backgroundColor: '#1a1e28', borderColor: '#2a2e3a', textStyle: { color: '#e8ecf4' } },
-                                legend: { bottom: '0%', left: 'center', textStyle: { color: '#8b94a8', fontSize: 12 } },
-                                color: ['#f43f5e', '#f59e0b', '#22c55e'],
+                                tooltip: {
+                                    trigger: 'item', formatter: '{b}: ¥{c} ({d}%)', backgroundColor: '#ffffff', borderColor: '#e5e7eb',
+                                    textStyle: { color: '#111827' }
+                                },
+                                legend: { bottom: '0%', left: 'center', textStyle: { color: '#4b5563', fontSize: 12 } },
+                                color: ['#3b82f6', '#f59e0b', '#10b981'],
                                 series: [{
                                     type: 'pie', radius: ['42%', '68%'],
                                     avoidLabelOverlap: false,
-                                    itemStyle: { borderRadius: 6, borderColor: '#13161e', borderWidth: 3 },
+                                    itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 3 },
                                     label: { show: false },
-                                    emphasis: { label: { show: true, fontSize: 14, fontWeight: 600, color: '#e8ecf4' } },
+                                    emphasis: { label: { show: true, fontSize: 14, fontWeight: 600, color: '#111827' } },
                                     data: [
                                         { value: financeData.totalPayable, name: '应付账款' },
                                         { value: financeData.totalReceivable, name: '应收账款' },
@@ -2797,29 +3401,29 @@
                         const barDom = document.getElementById('stockBarChart');
                         if (barDom && stockList.value.length > 0) {
                             if (barChartInst) { barChartInst.dispose(); barChartInst = null; }
-                            barChartInst = echarts.init(barDom, 'dark');
+                            barChartInst = echarts.init(barDom);
                             const sortedStock = [...stockList.value].sort((a, b) => b.totalCost - a.totalCost).slice(0, 5);
                             barChartInst.setOption({
                                 backgroundColor: 'transparent',
                                 tooltip: {
                                     trigger: 'axis',
-                                    backgroundColor: '#1a1e28',
-                                    borderColor: '#2a2e3a',
-                                    textStyle: { color: '#e8ecf4' },
-                                    formatter: params => `${params[0].name}<br/>资金占用: ¥${params[0].value}`
+                                    backgroundColor: '#ffffff',
+                                    borderColor: '#e5e7eb',
+                                    textStyle: { color: '#111827' },
+                                    formatter: params => `${params[0].name}<br />资金占用: ¥${params[0].value}`
                                 },
                                 grid: { left: '0', right: '4%', bottom: '18%', top: '8%', containLabel: true },
                                 xAxis: {
                                     type: 'category',
                                     data: sortedStock.map(item => item.goodsName),
-                                    axisLabel: { interval: 0, rotate: 18, fontSize: 11, color: '#8b94a8' },
-                                    axisLine: { lineStyle: { color: '#2a2e3a' } },
+                                    axisLabel: { interval: 0, rotate: 18, fontSize: 11, color: '#4b5563' },
+                                    axisLine: { lineStyle: { color: '#d1d5db' } },
                                     axisTick: { show: false }
                                 },
                                 yAxis: {
                                     type: 'value',
-                                    axisLabel: { color: '#8b94a8', fontSize: 11 },
-                                    splitLine: { lineStyle: { color: '#1f2433' } }
+                                    axisLabel: { color: '#4b5563', fontSize: 11 },
+                                    splitLine: { lineStyle: { color: '#f3f4f6' } }
                                 },
                                 series: [{
                                     data: sortedStock.map(item => item.totalCost),
@@ -2827,12 +3431,12 @@
                                     barWidth: '45%',
                                     itemStyle: {
                                         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                            { offset: 0, color: '#4f7fff' },
-                                            { offset: 1, color: '#3d6ef0' }
+                                            { offset: 0, color: '#60a5fa' },
+                                            { offset: 1, color: '#2563eb' }
                                         ]),
                                         borderRadius: [6, 6, 0, 0]
                                     },
-                                    emphasis: { itemStyle: { color: '#6b93ff' } }
+                                    emphasis: { itemStyle: { color: '#3b82f6' } }
                                 }]
                             });
                         }
@@ -2876,7 +3480,8 @@
                 const formatDate = (dateStr) => {
                     if (!dateStr) return '—';
                     const d = new Date(dateStr);
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}
+    ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                 };
 
                 onMounted(() => { checkLoginState(); });
@@ -2885,13 +3490,22 @@
                     isLogin, loginForm, submitLogin, logout, currentUser, currentRole,
                     currentMenu, menuTitle, allowedMenus,
                     goodsList, newGoods, loadGoodsList, submitAddGoods, uploadImage, previewImageUrl,
+                    editGoodsModal, editGoodsData, openEditGoods, submitEditGoods,
+                    goodsSearchKeyword, goodsPage, filteredGoods, paginatedGoods,
                     partnerList, newPartner, loadPartnerList, submitAddPartner,
+                    editPartnerModal, editPartnerData, openEditPartner, submitEditPartner,
+                    partnerSearchKeyword, partnerPage, filteredPartners, paginatedPartners,
                     inboundData, outboundData, submitInbound, submitOutbound,
+                    inboundSupplierSearch, inboundGoodsSearch, filteredInboundSuppliers, filteredInboundGoods,
+                    outboundCustomerSearch, outboundGoodsSearch, filteredOutboundCustomers, filteredOutboundGoods,
+                    isSubmitting,
                     pendingOrders, loadPendingOrders, doApprove, doRejectOrder,
                     stockList, stockPage, stockTotal, loadStockLedger, exportStockExcel,
+                    inventoryCheckModal, inventoryData, openInventoryCheck, submitInventoryCheck,
                     financeData, loadFinanceData,
                     accountList, accountPage, accountTotal, accountFilterType, changeAccountFilter, doSettleAccount,
-                    historyList, historyPage, historyTotal, historyQuery, loadHistoryOrders,
+                    settleModal, settleData, openSettleModal, submitSettleAccount,
+                    historyList, historyPage, historyTotal, historyQuery, loadHistoryOrders, printOrder,
                     logList, logPage, logTotal, loadLogs,
                     sysTab, sysUsers, sysRoles, sysMenus, selectedRole, configMenuIds, newUserForm,
                     loadSysConfig, selectRoleForConfig, saveRoleMenuConfig, changeUserRole,

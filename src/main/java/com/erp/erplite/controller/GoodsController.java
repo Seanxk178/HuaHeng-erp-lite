@@ -40,4 +40,14 @@ public class GoodsController {
         goodsService.addGoods(goods);
         return Result.success("商品添加成功");
     }
+
+    /**
+     * 更新商品接口
+     */
+    @Log("修改了商品基础数据")
+    @PostMapping("/update")
+    public Result<String> updateGoods(@RequestBody Goods goods) {
+        goodsService.updateGoods(goods);
+        return Result.success("商品修改成功");
+    }
 }
