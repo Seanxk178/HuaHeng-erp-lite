@@ -28,6 +28,10 @@ public class GoodsService {
         return goodsMapper.selectList(null);
     }
 
+    public com.baomidou.mybatisplus.core.metadata.IPage<Goods> getGoodsPage(int pageNum, int pageSize) {
+        return goodsMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), null);
+    }
+
     /**
      * 新增商品
      * 业务风险点：商品编码必须唯一
@@ -55,12 +59,44 @@ public class GoodsService {
      * 更新商品信息
      */
     public void updateGoods(Goods goods) {
-        if (goods.getId() == null) throw new RuntimeException("商品ID不能为空");
+        if (goods.getId() == null) throw new com.erp.erplite.common.BusinessException("商品ID不能为空");
         QueryWrapper<Goods> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("code", goods.getCode()).ne("id", goods.getId());
         if (goodsMapper.exists(queryWrapper)) {
-            throw new RuntimeException("商品编码已存在，请更换编码！");
+            throw new com.erp.erplite.common.BusinessException("商品编码已存在，请更换编码！");
         }
         goodsMapper.updateById(goods);
+    }
+
+    /**
+     * 批量导入商品 (存在则更新，不存在则新增)
+     */
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public void importGoodsBatch(List<Goods> goodsList) {
+        log.info("开始批量导入商品，共 {} 条", goodsList.size());
+        int insertCount = 0;
+        int updateCount = 0;
+
+        for (Goods g : goodsList) {
+            if (g.getCode() == null || g.getCode().trim().isEmpty()) {
+                continue; // 跳过空编码的数据
+            }
+            QueryWrapper<Goods> query = new QueryWrapper<>();
+            query.eq("code", g.getCode());
+            Goods existGoods = goodsMapper.selectOne(query);
+
+            if (existGoods == null) {
+                // 默认值处理
+                if (g.getStatus() == null) g.setStatus(1);
+                g.setCreateTime(new java.util.Date());
+                goodsMapper.insert(g);
+                insertCount++;
+            } else {
+                g.setId(existGoods.getId()); // 保留原有 ID 进行更新
+                goodsMapper.updateById(g);
+                updateCount++;
+            }
+        }
+        log.info("批量导入完成: 新增 {} 条，更新 {} 条", insertCount, updateCount);
     }
 }

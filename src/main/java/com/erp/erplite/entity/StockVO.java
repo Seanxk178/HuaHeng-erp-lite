@@ -22,8 +22,14 @@ public class StockVO {
     @ExcelProperty("仓库ID")
     private Long warehouseId;
 
+    @ExcelProperty("仓库名称")
+    private String warehouseName;
+
     @ExcelProperty("商品名称")
     private String goodsName;
+
+    @ExcelProperty("规格型号")
+    private String spec;
 
     @ExcelProperty("计量单位")
     private String unit;
@@ -36,4 +42,7 @@ public class StockVO {
 
     @ExcelProperty("加权平均单价(元)")
     private BigDecimal avgPrice;
+    
+    @ExcelIgnore
+    private BigDecimal defaultPrice; // 用于前端开单带出默认价格
 }

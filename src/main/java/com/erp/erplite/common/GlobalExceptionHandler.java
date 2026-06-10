@@ -13,7 +13,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     /**
-     * 捕获所有 Exception 异常
+     * 捕获业务异常
+     * 业务异常属于已知异常，只打印普通提示，不需要打印长堆栈，避免污染日志
+     */
+    @ExceptionHandler(BusinessException.class)
+    public Result<?> handleBusinessException(BusinessException e) {
+        log.warn("业务拦截: {}", e.getMessage());
+        return Result.error(e.getCode() != null ? e.getCode() : 500, e.getMessage());
+    }
+
+    /**
+     * 捕获所有未知 Exception 异常
      *
      * @param e 异常对象
      * @return 统一错误响应
@@ -25,11 +35,10 @@ public class GlobalExceptionHandler {
             return Result.error(404, "资源未找到: " + e.getMessage());
         }
 
-        // 1. 打印完整的错误日志到控制台，方便开发排查
+        // 1. 打印完整的错误日志到控制台，方便开发排查（未知异常必须打印堆栈）
         log.error("系统发生异常，异常信息: ", e);
 
         // 2. 封装错误信息，返回给前端统一的 JSON 格式
-        // TODO: 后期可以根据不同的自定义异常（如业务异常、校验异常）做更细致的分类处理
-        return Result.error("系统异常，请联系管理员: " + e.getMessage());
+        return Result.error("系统繁忙，请稍后再试或联系管理员");
     }
 }

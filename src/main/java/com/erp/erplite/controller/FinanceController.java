@@ -9,10 +9,12 @@ import com.erp.erplite.common.RequireRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import com.erp.erplite.common.SystemConstants;
+
 @RestController
 @RequestMapping("/finance")
 @RequiredArgsConstructor
-@RequireRole({"finance"})
+@com.erp.erplite.common.RequireRole({SystemConstants.ROLE_FINANCE, SystemConstants.ROLE_ADMIN})
 public class FinanceController {
 
     private final FinanceService financeService;

@@ -19,10 +19,10 @@ public class StockService {
     /**
      * 获取实时库存台账
      */
-    public com.baomidou.mybatisplus.core.metadata.IPage<StockVO> getStockLedger(int pageNum, int pageSize) {
-        log.info("查询实时库存台账(含财务), 分页: {}/{}", pageNum, pageSize);
+    public com.baomidou.mybatisplus.core.metadata.IPage<StockVO> getStockLedger(int pageNum, int pageSize, Long warehouseId) {
+        log.info("查询实时库存台账(含财务), 仓库: {}, 分页: {}/{}", warehouseId, pageNum, pageSize);
         com.baomidou.mybatisplus.core.metadata.IPage<StockVO> page = stockMapper
-                .getStockLedger(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize));
+                .getStockLedger(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), warehouseId);
 
         // 遍历计算移动加权平均单价
         for (StockVO vo : page.getRecords()) {
@@ -80,5 +80,12 @@ public class StockService {
             result.add(vo);
         }
         return result;
+    }
+
+    /**
+     * 前端开单联想搜索商品及库存
+     */
+    public java.util.List<StockVO> searchGoodsWithStock(Long warehouseId, String keyword) {
+        return stockMapper.searchGoodsWithStock(warehouseId, keyword);
     }
 }

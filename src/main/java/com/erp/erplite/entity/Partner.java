@@ -15,6 +15,8 @@ public class Partner {
     private Integer type; // 1-供应商, 2-客户
     private String contact;
     private String phone;
+    private String address;
+    private String mainProduct;
     private Integer status; // 状态: 1-启用, 0-停用
     private Date createTime;
 }

@@ -55,11 +55,11 @@ INSERT INTO sys_menu (menu_key, menu_name) VALUES
 -- 为各角色配置默认菜单权限
 -- ============================================================
 
--- 财务专员默认权限：单据审批、历史单据、库存台账、财务看板、报表中心
+-- 财务专员默认权限：历史单据、库存台账、财务看板、报表中心
 INSERT INTO sys_role_menu (role_id, menu_id)
 SELECT r.id, m.id FROM sys_role r, sys_menu m
 WHERE r.role_key = 'ROLE_FINANCE'
-AND m.menu_key IN ('approve', 'history', 'stock', 'finance', 'report');
+AND m.menu_key IN ('history', 'stock', 'finance', 'report');
 
 -- 采购/商务专员默认权限：往来单位、商品管理、采购入库、销售出库
 INSERT INTO sys_role_menu (role_id, menu_id)

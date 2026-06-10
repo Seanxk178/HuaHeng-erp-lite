@@ -69,6 +69,12 @@
             <version>3.3.2</version>
         </dependency>
 
+        <!-- Spring Security Crypto (提供 BCryptPasswordEncoder 等轻量级加密工具，且不会触发自动安全配置) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

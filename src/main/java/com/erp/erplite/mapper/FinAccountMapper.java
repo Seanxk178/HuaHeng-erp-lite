@@ -27,8 +27,8 @@ public interface FinAccountMapper extends BaseMapper<FinAccount> {
             "LEFT JOIN doc_order o ON a.order_id = o.id " +
             "WHERE 1=1 " +
             "<if test='type != null'> AND a.type = #{type} </if> " +
-            "<if test='startDate != null'> AND a.create_time &gt;= #{startDate} </if> " +
-            "<if test='endDate != null'> AND a.create_time &lt;= #{endDate} </if> " +
+            "<if test='startDate != null and startDate != \"\"'> AND a.create_time &gt;= #{startDate} </if> " +
+            "<if test='endDate != null and endDate != \"\"'> AND a.create_time &lt;= #{endDate} </if> " +
             "<if test='keyword != null and keyword != \"\"'> " +
             "  AND (o.order_no LIKE CONCAT('%', #{keyword}, '%') OR p.name LIKE CONCAT('%', #{keyword}, '%')) " +
             "</if> " +

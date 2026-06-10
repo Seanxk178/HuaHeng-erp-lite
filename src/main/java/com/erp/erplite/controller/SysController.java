@@ -29,28 +29,28 @@ public class SysController {
     }
 
     /** 获取全部角色列表（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @GetMapping("/roles")
     public Result<List<SysRole>> getRoles() {
         return Result.success(sysService.getAllRoles());
     }
 
     /** 获取全部菜单列表（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @GetMapping("/menu/all")
     public Result<List<SysMenu>> getAllMenus() {
         return Result.success(sysService.getAllMenus());
     }
 
     /** 获取某角色已配置的菜单 id 列表（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @GetMapping("/role/menus/{roleId}")
     public Result<List<Long>> getRoleMenus(@PathVariable Long roleId) {
         return Result.success(sysService.getRoleMenuIds(roleId));
     }
 
     /** 保存角色的菜单权限（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @PostMapping("/role/menus")
     public Result<String> saveRoleMenus(@RequestBody RoleMenuParam param) {
         sysService.saveRoleMenus(param.getRoleId(), param.getMenuIds());
@@ -58,14 +58,14 @@ public class SysController {
     }
 
     /** 获取全部用户列表（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @GetMapping("/users")
     public Result<List<User>> getUsers() {
         return Result.success(sysService.getAllUsers());
     }
 
     /** 修改用户角色（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @PutMapping("/user/role")
     public Result<String> updateUserRole(@RequestBody UserRoleParam param) {
         sysService.updateUserRole(param.getUserId(), param.getRoleKey());
@@ -73,7 +73,7 @@ public class SysController {
     }
 
     /** 新增用户（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @PostMapping("/user")
     public Result<String> createUser(@RequestBody CreateUserParam param) {
         sysService.createUser(param.getUsername(), param.getPassword(), param.getRole());
@@ -81,7 +81,7 @@ public class SysController {
     }
 
     /** 修改用户名（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @PutMapping("/user/username")
     public Result<String> updateUsername(@RequestBody UpdateUsernameParam param) {
         sysService.updateUsername(param.getUserId(), param.getNewUsername());
@@ -89,7 +89,7 @@ public class SysController {
     }
 
     /** 重置密码（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @PutMapping("/user/password")
     public Result<String> resetPassword(@RequestBody ResetPasswordParam param) {
         sysService.resetPassword(param.getUserId(), param.getNewPassword());
@@ -97,7 +97,7 @@ public class SysController {
     }
 
     /** 删除用户（禁止删除自身） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @DeleteMapping("/user/{userId}")
     public Result<String> deleteUser(@PathVariable Long userId) {
         sysService.deleteUser(userId);
@@ -105,7 +105,7 @@ public class SysController {
     }
 
     /** 获取操作日志（仅管理员） */
-    @RequireRole("admin")
+    @com.erp.erplite.common.RequireRole(com.erp.erplite.common.SystemConstants.ROLE_ADMIN)
     @GetMapping("/logs")
     public Result<com.baomidou.mybatisplus.core.metadata.IPage<com.erp.erplite.entity.SysLog>> getLogs(
             @RequestParam(defaultValue = "1") int pageNum,

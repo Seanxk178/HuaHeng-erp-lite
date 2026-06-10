@@ -12,4 +12,6 @@ public class FinanceDashboardVO {
     private BigDecimal totalSales;
     // 总毛利润 (销售额 - 结转出库成本)
     private BigDecimal totalProfit;
+    // 库存资金占用 Top 5
+    private java.util.List<StockVO> topStocks;
 }

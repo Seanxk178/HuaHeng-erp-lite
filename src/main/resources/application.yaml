@@ -1,6 +1,7 @@
 server:
-#  port: 8089 # 启动端口
-  port: 8080 # 启动端口
+  port: 8089 # 启动端口
+  address: 0.0.0.0 # 绑定所有IP，允许外部访问
+#  port: 8080 # 启动端口
 
 spring:
   servlet:
@@ -9,10 +10,10 @@ spring:
       max-request-size: 20MB   # 单次请求最大总限制
   datasource:
     # JDBC URL: 指定时区、开启批量处理、指定字符集
+#    url: jdbc:mysql://localhost:3306/erp_lite?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
     url: jdbc:mysql://localhost:3306/erp_lite?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
-#    url: jdbc:mysql://localhost:3308/erp_lite?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
-    username: root
-#    username: admin
+    #    username: root
+    username: admin
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
@@ -26,4 +27,4 @@ mybatis-plus:
 
 erp:
   upload:
-    image-path: E:/erp-lite/uploads/images/
+    image-path: ./uploads/images/ # 改为相对路径，适配不同操作系统

@@ -14,6 +14,8 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
@@ -21,6 +23,25 @@ import java.util.Arrays;
 public class AuthInterceptor implements HandlerInterceptor {
 
     private final UserMapper userMapper;
+
+    // 轻量级本地缓存，用于存储 Token 验证结果，降低数据库 IO 压力
+    private static final Map<String, CacheEntry> tokenCache = new ConcurrentHashMap<>();
+
+    // 暴露给外部调用，用于踢人下线或重置 token 时清理缓存
+    public static void invalidateToken(String token) {
+        if (token != null) {
+            tokenCache.remove(token);
+        }
+    }
+
+    private static class CacheEntry {
+        User user;
+        long cacheTime;
+        CacheEntry(User user, long cacheTime) {
+            this.user = user;
+            this.cacheTime = cacheTime;
+        }
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -41,12 +62,27 @@ public class AuthInterceptor implements HandlerInterceptor {
             return forbidden(response, 401, "请先登录");
         }
 
-        // 2. 根据 token 查询用户
-        QueryWrapper<User> query = new QueryWrapper<>();
-        query.eq("token", token);
-        User user = userMapper.selectOne(query);
+        // 2. 根据 token 获取用户 (优先读缓存)
+        User user = null;
+        long now = System.currentTimeMillis();
+        CacheEntry entry = tokenCache.get(token);
+        
+        // 缓存有效期设为 5 分钟 (300000 毫秒)
+        if (entry != null && (now - entry.cacheTime) < 300000) {
+            user = entry.user;
+        } else {
+            // 缓存失效或不存在，查数据库
+            QueryWrapper<User> query = new QueryWrapper<>();
+            query.eq("token", token);
+            user = userMapper.selectOne(query);
+            
+            if (user != null) {
+                tokenCache.put(token, new CacheEntry(user, now));
+            }
+        }
 
         if (user == null) {
+            tokenCache.remove(token); // 无效 token 从缓存清理
             return forbidden(response, 401, "Token 无效或已过期，请重新登录");
         }
 
@@ -56,6 +92,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             user.setToken("");
             user.setTokenExpireTime(null);
             userMapper.updateById(user);
+            tokenCache.remove(token); // 同时清理本地缓存
             return forbidden(response, 401, "登录已过期，请重新登录");
         }
 

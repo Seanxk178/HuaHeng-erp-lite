@@ -9,10 +9,17 @@ import java.math.BigDecimal;
 @Mapper
 public interface OrderDetailMapper extends BaseMapper<OrderDetail> {
 
-    // 统计总销售额 (关联主表 doc_order, 筛选 type = 2 销售出库单)
+    // 统计总销售额 (关联主表 doc_order, 筛选 type = 2 销售出库单, status = 1 已发货)
     @Select("SELECT IFNULL(SUM(d.total_amount), 0.00) " +
             "FROM doc_order_detail d " +
             "JOIN doc_order o ON d.order_id = o.id " +
-            "WHERE o.type = 2")
+            "WHERE o.type = 2 AND o.status = 1")
     BigDecimal sumTotalSales();
+
+    // 统计总发货成本 (对应销售出库单的出库成本)
+    @Select("SELECT IFNULL(SUM(d.cost_amount), 0.00) " +
+            "FROM doc_order_detail d " +
+            "JOIN doc_order o ON d.order_id = o.id " +
+            "WHERE o.type = 2 AND o.status = 1")
+    BigDecimal sumTotalCost();
 }
